@@ -38,15 +38,9 @@ function Texture(game, opts) {
 
   console.log(this.THREE.ShaderLib.lambert.uniforms);
 
-  //this.uniforms = this.THREE.UniformsUtils.clone(this.THREE.ShaderLib.lambert.uniforms);
   this.uniforms = {
     map: {type: 't', value: null}
   };
-
-  console.log('vertex=');
-  console.log(this.THREE.ShaderLib.lambert.vertexShader);
-  console.log('fragment=');
-  console.log(this.THREE.ShaderLib.lambert.fragmentShader);
 
   this.options = {
     crossOrigin: 'Anonymous',
@@ -56,19 +50,22 @@ function Texture(game, opts) {
       side: this.THREE.DoubleSide,
 
       uniforms: this.uniforms,
-      vertexShader: this.THREE.ShaderLib.lambert.vertexShader,
-      //fragmentShader: 'void main() { gl_FragColor = vec4(0.2, 0.2, 0.2, 1.0); }'
-      //fragmentShader: this.THREE.ShaderLib.lambert.fragmentShader
-      fragmentShader: [
-'uniform sampler2D map;',
-//'varying vec2 vUv;',
+      vertexShader: [
+'varying vec2 vUv;',
 '',
 'void main() {',
-//'   vec4 texelColor = texture2D(map, vUv);',
-'   gl_FragColor = vec4(0.3, 0.2, 0.5, 1.0);',
-//'   gl_FragColor = texture2D(map, gl_PointCoord);',
-//'   gl_FragColor = vec4(0.3, gl_FragCoord.x, gl_FragCoord.y, 1.0);',
-//'   gl_FragColor = texelColor;',
+'   vUv = uv;',
+'',
+'   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+'}'
+        ].join('\n'),
+      fragmentShader: [
+'uniform sampler2D map;',
+'',
+'varying vec2 vUv;',
+'',
+'void main() {',
+'   gl_FragColor = texture2D(map, vUv);',
 '}'
 ].join('\n')
     },
