@@ -52,9 +52,13 @@ function Texture(game, opts) {
       uniforms: this.uniforms,
       vertexShader: [
 'varying vec2 vUv;',
+'varying vec3 vNormal;',
+'varying vec3 vPosition;',
 '',
 'void main() {',
 '   vUv = uv;',
+'   vNormal = normalize(normalMatrix * normal);',
+'   vPosition = position;',
 '',
 '   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
 '}'
@@ -63,9 +67,15 @@ function Texture(game, opts) {
 'uniform sampler2D map;',
 '',
 'varying vec2 vUv;',
+'varying vec3 vNormal;',
+'varying vec3 vPosition;',
 '',
 'void main() {',
+'   vec2 tileUv = vec2(dot(vNormal.zxy, vPosition), dot(vNormal.yzx, vPosition));',
+'',
 '   gl_FragColor = texture2D(map, vUv);',
+//'   gl_FragColor = texture2D(map, tileUv);',
+//'   gl_FragColor = texture2D(map, vec2(vPosition.x, vPosition.y));',
 '}'
 ].join('\n')
     },
