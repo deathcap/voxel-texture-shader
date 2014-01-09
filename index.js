@@ -36,12 +36,41 @@ function Texture(game, opts) {
   var useFlatColors = opts.materialFlatColor === true;
   delete opts.materialFlatColor;
 
+  console.log(this.THREE.ShaderLib.lambert.uniforms);
+
+  //this.uniforms = this.THREE.UniformsUtils.clone(this.THREE.ShaderLib.lambert.uniforms);
+  this.uniforms = {
+    map: {type: 't', value: null}
+  };
+
+  console.log('vertex=');
+  console.log(this.THREE.ShaderLib.lambert.vertexShader);
+  console.log('fragment=');
+  console.log(this.THREE.ShaderLib.lambert.fragmentShader);
+
   this.options = {
     crossOrigin: 'Anonymous',
     materialParams: {
       ambient: 0xbbbbbb,
       transparent: false,
-      side: this.THREE.DoubleSide
+      side: this.THREE.DoubleSide,
+
+      uniforms: this.uniforms,
+      vertexShader: this.THREE.ShaderLib.lambert.vertexShader,
+      //fragmentShader: 'void main() { gl_FragColor = vec4(0.2, 0.2, 0.2, 1.0); }'
+      //fragmentShader: this.THREE.ShaderLib.lambert.fragmentShader
+      fragmentShader: [
+'uniform sampler2D map;',
+//'varying vec2 vUv;',
+'',
+'void main() {',
+//'   vec4 texelColor = texture2D(map, vUv);',
+'   gl_FragColor = vec4(0.3, 0.2, 0.5, 1.0);',
+//'   gl_FragColor = texture2D(map, gl_PointCoord);',
+//'   gl_FragColor = vec4(0.3, gl_FragCoord.x, gl_FragCoord.y, 1.0);',
+//'   gl_FragColor = texelColor;',
+'}'
+].join('\n')
     },
     materialTransparentParams: {
       ambient: 0xbbbbbb,
@@ -49,8 +78,9 @@ function Texture(game, opts) {
       side: this.THREE.DoubleSide,
       //depthWrite: false,
       //depthTest: false
+      // TODO
     },
-    materialType: this.THREE.MeshLambertMaterial,
+    materialType: this.THREE.ShaderMaterial,
     applyTextureParams: function(map) {
       map.magFilter = self.THREE.NearestFilter;
       map.minFilter = self.THREE.LinearMipMapLinearFilter;
@@ -73,6 +103,11 @@ function Texture(game, opts) {
   this.texture = new this.THREE.Texture(this.canvas);
   this.options.applyTextureParams(this.texture);
 
+  this.uniforms.map.value = this.texture;
+  /*this.uniforms.ambientLightColor.value = [0.73, 0.73, 0.73]; // uniforms required by lambert shader
+  this.uniforms.directionalLightColor.value = [0, 0, 0];
+  this.uniforms.directionalLightDirection.value = [0, 0, 0];*/
+
   if (useFlatColors) {
     // If were using simple colors
     this.material = new this.THREE.MeshBasicMaterial({
@@ -80,9 +115,9 @@ function Texture(game, opts) {
     });
   } else {
     var opaque = new this.options.materialType(this.options.materialParams);
-    opaque.map = this.texture;
+    //opaque.map = this.texture;
     var transparent = new this.options.materialType(this.options.materialTransparentParams);
-    transparent.map = this.texture;
+    //transparent.map = this.texture;
     this.material = new this.THREE.MeshFaceMaterial([
       opaque,
       transparent
