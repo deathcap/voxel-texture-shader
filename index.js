@@ -92,7 +92,7 @@ function Texture(game, opts) {
 //'   vec2 texCoord = tileOffset + tileSize * fract(tileUV);',
 '',
 //'   gl_FragColor = texture2D(map, vUv);',
-'   gl_FragColor = texture2D(tileMap, vTexCoord);',
+'   gl_FragColor = texture2D(tileMap, fract(vTexCoord));',
 //'   gl_FragColor = texture2D(map, fract(vec2(vNormal.x, vNormal.y)));',
 '}'
 ].join('\n')
