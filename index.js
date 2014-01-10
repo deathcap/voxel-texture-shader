@@ -46,7 +46,7 @@ function Texture(game, opts) {
 
   // create core atlas and texture
   this.atlas = createAtlas(this.canvas);
-  this.atlas.tilepad = true;
+  this.atlas.tilepad = false; //true; // TODO: re-enable
   this._atlasuv = false;
   this._atlaskey = false;
   this.texture = new this.THREE.Texture(this.canvas);
