@@ -39,7 +39,8 @@ function Texture(game, opts) {
   console.log(this.THREE.ShaderLib.lambert.uniforms);
 
   this.uniforms = {
-    map: {type: 't', value: null}
+    tileMap: {type: 't', value: null},
+    tileSize: {type: 'f', value: 16.0}
   };
 
   this.options = {
@@ -50,35 +51,48 @@ function Texture(game, opts) {
       side: this.THREE.DoubleSide,
 
       uniforms: this.uniforms,
+// based on https://github.com/mikolalysenko/ao-shader/blob/master/lib/ao.vsh
       vertexShader: [
-'varying vec2 vUv;',
 'varying vec3 vNormal;',
-'varying vec3 vPosition;',
+'varying vec2 vTileCoord;',
+'varying vec2 vTexCoord;',
 '',
 'void main() {',
-'   vUv = uv;',
-'   vNormal = normalize(normalMatrix * normal);',
-'   vPosition = position;',
+//'   vec3 position = attrib0.xyz',   // three.js passes position in attribute 0 already
+//'   vNormal = 128.0 - normal.xyz;',  // and normal in attribute 1. but TODO: why 128.0-?
+'   vNormal = normal;',
+// Compute texture coordinate
+'   vTexCoord = vec2(dot(position, vec3(normal.y - normal.z, 0, normal.x)),',
+'                    dot(position, vec3(0, -abs(normal.x + normal.z), normal.y)));',
+// Compute tile coordinate
+//'   float tx = normal.w / 16.0;', // '.w' is not in normal.. vec3 not vec4
+'   float tx = 0.01;',
+'   vTileCoord.x = floor(tx);',
+'   vTileCoord.y = fract(tx) * 16.0;',
 '',
 '   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
 '}'
         ].join('\n'),
+// and https://github.com/mikolalysenko/ao-shader/blob/master/lib/ao.fsh
       fragmentShader: [
-'uniform sampler2D map;',
+'uniform float tileSize;',
+'uniform sampler2D tileMap;',
 '',
-'varying vec2 vUv;',
 'varying vec3 vNormal;',
-'varying vec3 vPosition;',
+'varying vec2 vTileCoord;',
+'varying vec2 vTexCoord;',
 '',
 'void main() {',
+//'   vec2 tileOffset = 2.0 * tileSize * tileCoord;',
+//'   float denom     = 2.0 * tileSize * 16.0;',
 '   vec2 tileOffset = vec2(0.0, 0.0);',
 '   vec2 tileSize = vec2(16.0 / 512.0, 16.0 / 512.0);', // texture size / atlas size
 '',
-'   vec2 tileUV = vec2(dot(vNormal.zxy, vPosition), dot(vNormal.yzx, vPosition));',
-'   vec2 texCoord = tileOffset + tileSize * fract(tileUV);',
+//'   vec2 tileUV = vec2(dot(vNormal.zxy, vPosition), dot(vNormal.yzx, vPosition));',
+//'   vec2 texCoord = tileOffset + tileSize * fract(tileUV);',
 '',
 //'   gl_FragColor = texture2D(map, vUv);',
-'   gl_FragColor = texture2D(map, texCoord);',
+'   gl_FragColor = texture2D(tileMap, vTexCoord);',
 //'   gl_FragColor = texture2D(map, fract(vec2(vNormal.x, vNormal.y)));',
 '}'
 ].join('\n')
@@ -114,7 +128,8 @@ function Texture(game, opts) {
   this.texture = new this.THREE.Texture(this.canvas);
   this.options.applyTextureParams(this.texture);
 
-  this.uniforms.map.value = this.texture;
+  this.uniforms.tileMap.value = this.texture;
+  this.uniforms.tileSize.value = 16.0; // TODO: set here or above?
   /*this.uniforms.ambientLightColor.value = [0.73, 0.73, 0.73]; // uniforms required by lambert shader
   this.uniforms.directionalLightColor.value = [0, 0, 0];
   this.uniforms.directionalLightDirection.value = [0, 0, 0];*/
@@ -126,9 +141,7 @@ function Texture(game, opts) {
     });
   } else {
     var opaque = new this.options.materialType(this.options.materialParams);
-    //opaque.map = this.texture;
     var transparent = new this.options.materialType(this.options.materialTransparentParams);
-    //transparent.map = this.texture;
     this.material = new this.THREE.MeshFaceMaterial([
       opaque,
       transparent
