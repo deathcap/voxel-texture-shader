@@ -40,7 +40,8 @@ function Texture(game, opts) {
 
   this.uniforms = {
     tileMap: {type: 't', value: null},
-    tileSize: {type: 'f', value: null}
+    tileSize: {type: 'f', value: null},
+    atlasSize: {type: 'f', value: null}
   };
 
   this.options = {
@@ -76,6 +77,7 @@ function Texture(game, opts) {
 // and https://github.com/mikolalysenko/ao-shader/blob/master/lib/ao.fsh
       fragmentShader: [
 'uniform float tileSize;',
+'uniform float atlasSize;',
 'uniform sampler2D tileMap;',
 '',
 'varying vec3 vNormal;',
@@ -92,7 +94,7 @@ function Texture(game, opts) {
 //'   vec2 texCoord = tileOffset + tileSize * fract(tileUV);',
 '',
 //'   gl_FragColor = texture2D(map, vUv);',
-'   gl_FragColor = texture2D(tileMap, fract(vTexCoord * tileSize));',
+'   gl_FragColor = texture2D(tileMap, fract(vTexCoord * (tileSize / atlasSize)));',
 //'   gl_FragColor = texture2D(map, fract(vec2(vNormal.x, vNormal.y)));',
 '}'
 ].join('\n')
@@ -129,7 +131,8 @@ function Texture(game, opts) {
   this.options.applyTextureParams(this.texture);
 
   this.uniforms.tileMap.value = this.texture;
-  this.uniforms.tileSize.value = 16.0 / 512.0; // size of texture tile in UV atlas units
+  this.uniforms.tileSize.value = 16.0; // size of one individual texture tile
+  this.uniforms.atlasSize.value = 512.0; // size of the texture atlas of all tiles, for scaling UV 
   /*this.uniforms.ambientLightColor.value = [0.73, 0.73, 0.73]; // uniforms required by lambert shader
   this.uniforms.directionalLightColor.value = [0, 0, 0];
   this.uniforms.directionalLightDirection.value = [0, 0, 0];*/
