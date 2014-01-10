@@ -36,12 +36,25 @@ function Texture(game, opts) {
   var useFlatColors = opts.materialFlatColor === true;
   delete opts.materialFlatColor;
 
-  console.log(this.THREE.ShaderLib.lambert.uniforms);
+  // create a canvas for the texture atlas
+  this.canvas = (typeof document !== 'undefined') ? document.createElement('canvas') : {};
+  this.canvas.width = opts.atlasWidth || 512;
+  this.canvas.height = opts.atlasHeight || 512;
+  var ctx = this.canvas.getContext('2d');
+  ctx.fillStyle = 'black';
+  ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+  // create core atlas and texture
+  this.atlas = createAtlas(this.canvas);
+  this.atlas.tilepad = true;
+  this._atlasuv = false;
+  this._atlaskey = false;
+  this.texture = new this.THREE.Texture(this.canvas);
 
   this.uniforms = {
-    tileMap: {type: 't', value: null},
-    tileSize: {type: 'f', value: null},
-    atlasSize: {type: 'f', value: null}
+    tileMap: {type: 't', value: this.texture},
+    tileSize: {type: 'f', value: 16.0},  // size of one individual texture tile
+    atlasSize: {type: 'f', value: this.canvas.width} // size of the texture atlas of all tiles, for scaling UV 
   };
 
   this.options = {
@@ -114,28 +127,7 @@ function Texture(game, opts) {
     }
   };
 
-  // create a canvas for the texture atlas
-  this.canvas = (typeof document !== 'undefined') ? document.createElement('canvas') : {};
-  this.canvas.width = opts.atlasWidth || 512;
-  this.canvas.height = opts.atlasHeight || 512;
-  var ctx = this.canvas.getContext('2d');
-  ctx.fillStyle = 'black';
-  ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-  // create core atlas and texture
-  this.atlas = createAtlas(this.canvas);
-  this.atlas.tilepad = true;
-  this._atlasuv = false;
-  this._atlaskey = false;
-  this.texture = new this.THREE.Texture(this.canvas);
   this.options.applyTextureParams(this.texture);
-
-  this.uniforms.tileMap.value = this.texture;
-  this.uniforms.tileSize.value = 16.0; // size of one individual texture tile
-  this.uniforms.atlasSize.value = 512.0; // size of the texture atlas of all tiles, for scaling UV 
-  /*this.uniforms.ambientLightColor.value = [0.73, 0.73, 0.73]; // uniforms required by lambert shader
-  this.uniforms.directionalLightColor.value = [0, 0, 0];
-  this.uniforms.directionalLightDirection.value = [0, 0, 0];*/
 
   if (useFlatColors) {
     // If were using simple colors
