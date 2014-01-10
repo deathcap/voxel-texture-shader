@@ -71,11 +71,15 @@ function Texture(game, opts) {
 'varying vec3 vPosition;',
 '',
 'void main() {',
-'   vec2 tileUv = vec2(dot(vNormal.zxy, vPosition), dot(vNormal.yzx, vPosition));',
+'   vec2 tileOffset = vec2(0.0, 0.0);',
+'   vec2 tileSize = vec2(16.0 / 512.0, 16.0 / 512.0);', // texture size / atlas size
 '',
-'   gl_FragColor = texture2D(map, vUv);',
-//'   gl_FragColor = texture2D(map, tileUv);',
-//'   gl_FragColor = texture2D(map, vec2(vPosition.x, vPosition.y));',
+'   vec2 tileUV = vec2(dot(vNormal.zxy, vPosition), dot(vNormal.yzx, vPosition));',
+'   vec2 texCoord = tileOffset + tileSize * fract(tileUV);',
+'',
+//'   gl_FragColor = texture2D(map, vUv);',
+'   gl_FragColor = texture2D(map, texCoord);',
+//'   gl_FragColor = texture2D(map, fract(vec2(vNormal.x, vNormal.y)));',
 '}'
 ].join('\n')
     },
