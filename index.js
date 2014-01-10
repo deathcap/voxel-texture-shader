@@ -97,6 +97,15 @@ function Texture(game, opts) {
 'varying vec2 vTileCoord;',
 'varying vec2 vTexCoord;',
 '',
+'float scale(float x, float fromLow, float fromHigh, float toLow, float toHigh) {',
+'   return (x - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;',
+'}',
+'',
+'vec2 scale(vec2 xy, float fromLow, float fromHigh, float toLow, float toHigh) {',
+'   return vec2(scale(xy.x, fromLow, fromHigh, toLow, toHigh),',
+'               scale(xy.y, fromLow, fromHigh, toLow, toHigh));',    
+'}',
+'',
 'void main() {',
 //'   vec2 tileOffset = 2.0 * tileSize * tileCoord;',
 //'   float denom     = 2.0 * tileSize * 16.0;',
@@ -107,7 +116,14 @@ function Texture(game, opts) {
 //'   vec2 texCoord = tileOffset + tileSize * fract(tileUV);',
 '',
 //'   gl_FragColor = texture2D(map, vUv);',
-'   gl_FragColor = texture2D(tileMap, fract(vTexCoord * (tileSize / atlasSize)));',
+'   float tileSizeUV = tileSize / atlasSize;',    // size of tile in UV coordinates
+'',
+'   gl_FragColor = texture2D(tileMap, ',
+'     scale(',
+'         fract(vTexCoord * tileSizeUV),',
+'           0.0, 1.0,',  // full space
+'           0.0, 1.0));',
+'',
 //'   gl_FragColor = texture2D(map, fract(vec2(vNormal.x, vNormal.y)));',
 '}'
 ].join('\n')
