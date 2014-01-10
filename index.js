@@ -85,7 +85,7 @@ function Texture(game, opts) {
 '   vec2 tileSize = vec2(1.0, 1.0);',
 
 //'   vTexCoord = tileOffset + tileSize * fract(tileUV);',
-'   vTexCoord = vec2(tileSizeUV, tileSizeUV) * tileUV;',
+'   vTexCoord = tileSizeUV * floor(tileUV);',
 //'   vTexCoord = vec2(dot(position, vec3(normal.y - normal.z, 0, normal.x)),',
 //'                    dot(position, vec3(0, -abs(normal.x + normal.z), normal.y)));',
 '',
