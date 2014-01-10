@@ -75,14 +75,16 @@ function Texture(game, opts) {
 //'   vec3 position = attrib0.xyz',   // three.js passes position in attribute 0 already
 //'   vNormal = 128.0 - normal.xyz;',  // and normal in attribute 1. but TODO: why 128.0-?
 '   vNormal = normal;',
-// Compute texture coordinate
+'',
 '   vTexCoord = vec2(dot(position, vec3(normal.y - normal.z, 0, normal.x)),',
 '                    dot(position, vec3(0, -abs(normal.x + normal.z), normal.y)));',
-// Compute tile coordinate
-//'   float tx = normal.w / 16.0;', // '.w' is not in normal.. vec3 not vec4
+'',
+/*
+//'   float tx = normal.w / 16.0;', // '.w' is not in normal.. vec3 not vec4. 
 '   float tx = 0.01;',
 '   vTileCoord.x = floor(tx);',
 '   vTileCoord.y = fract(tx) * 16.0;',
+*/
 '',
 '   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
 '}'
@@ -97,15 +99,6 @@ function Texture(game, opts) {
 'varying vec2 vTileCoord;',
 'varying vec2 vTexCoord;',
 '',
-'float scale(float x, float fromLow, float fromHigh, float toLow, float toHigh) {',
-'   return (x - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;',
-'}',
-'',
-'vec2 scale(vec2 xy, float fromLow, float fromHigh, float toLow, float toHigh) {',
-'   return vec2(scale(xy.x, fromLow, fromHigh, toLow, toHigh),',
-'               scale(xy.y, fromLow, fromHigh, toLow, toHigh));',    
-'}',
-'',
 'void main() {',
 //'   vec2 tileOffset = 2.0 * tileSize * tileCoord;',
 //'   float denom     = 2.0 * tileSize * 16.0;',
@@ -119,10 +112,8 @@ function Texture(game, opts) {
 '   float tileSizeUV = tileSize / atlasSize;',    // size of tile in UV coordinates
 '',
 '   gl_FragColor = texture2D(tileMap, ',
-'     scale(',
-'         fract(vTexCoord * tileSizeUV),',
-'           0.0, 1.0,',  // full space
-'           0.0, 1.0));',
+'     ',
+'         fract(vTexCoord * tileSizeUV));',
 '',
 //'   gl_FragColor = texture2D(map, fract(vec2(vNormal.x, vNormal.y)));',
 '}'
