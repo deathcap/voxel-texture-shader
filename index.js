@@ -54,8 +54,8 @@ function Texture(game, opts) {
   this.uniforms = {
     tileMap: {type: 't', value: this.texture},
     tileSize: {type: 'f', value: 16.0},  // size of one individual texture tile
-    atlasSize: {type: 'f', value: this.canvas.width}, // size of the texture atlas of all tiles, for scaling UV 
-    tileSizeUV: {type: 'f', value: 16.0 / this.canvas.width} // size of tile in UV units (0.0-1.0)
+    tileSizeUV: {type: 'f', value: 16.0 / this.canvas.width}, // size of tile in UV units (0.0-1.0)
+    tileOffset: {type: 'v2', value: new this.game.THREE.Vector2(0.28125, 0.96875)}, // test stone/wood TODO: get from material
   };
 
   this.options = {
@@ -67,38 +67,14 @@ function Texture(game, opts) {
 
       uniforms: this.uniforms,
 // based on https://github.com/mikolalysenko/ao-shader/blob/master/lib/ao.vsh
+// and http://0fps.wordpress.com/2013/07/09/texture-atlases-wrapping-and-mip-mapping/
       vertexShader: [
 'varying vec3 vNormal;',
 'varying vec3 vPosition;',
-//'varying vec2 vTileCoord;',
-//'varying vec2 vTexCoord;',
 '',
 'void main() {',
-//'   vec3 position = attrib0.xyz',   // three.js passes position in attribute 0 already
-//'   vNormal = 128.0 - normal.xyz;',  // and normal in attribute 1. but TODO: why 128.0-?
 '   vNormal = normal;',
 '   vPosition = position;',
-/*
-'',
-'   vec2 tileUV = vec2(dot(normal.zxy, position), dot(normal.yzx, position));',
-
-'   vec2 tileOffset = vec2(0.0, 0.0);',
-//'   vec2 tileSize = vec2(16.0 / 512.0, 16.0 / 512.0);', // texture size / atlas size
-'   vec2 tileSize = vec2(1.0, 1.0);',
-
-//'   vTexCoord = tileOffset + tileSize * fract(tileUV);',
-'   vTexCoord = tileSizeUV * floor(tileUV);',
-*/
-//'   vTexCoord = uv;',
-//'   vTexCoord = vec2(dot(position, vec3(normal.y - normal.z, 0, normal.x)),',
-//'                    dot(position, vec3(0, -abs(normal.x + normal.z), normal.y)));',
-'',
-/*
-//'   float tx = normal.w / 16.0;', // '.w' is not in normal.. vec3 not vec4. 
-'   float tx = 0.01;',
-'   vTileCoord.x = floor(tx);',
-'   vTileCoord.y = fract(tx) * 16.0;',
-*/
 '',
 '   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
 '}'
@@ -106,31 +82,19 @@ function Texture(game, opts) {
 // and https://github.com/mikolalysenko/ao-shader/blob/master/lib/ao.fsh
       fragmentShader: [
 'uniform float tileSize;',
-'uniform float atlasSize;',
 'uniform sampler2D tileMap;',
 'uniform float tileSizeUV;',
+'uniform vec2 tileOffset;',
 '',
 'varying vec3 vNormal;',
 'varying vec3 vPosition;',
-//'varying vec2 vTileCoord;',
-//'varying vec2 vTexCoord;',
 '',
 'void main() {',
-//'   vec2 tileOffset = 2.0 * tileSize * tileCoord;',
-//'   float denom     = 2.0 * tileSize * 16.0;',
-'',
-//'   vec2 texCoord = tileOffset + tileSize * fract(tileUV);',
-'',
-//'   gl_FragColor = texture2D(tileMap, vUv);',
-'   vec2 tileOffset = vec2(0.28125, 0.96875);', // test stone/wood TODO: get from material
 '   vec2 tileUV = fract(vec2(dot(vNormal.zxy, vPosition),', // [0..1] offset within tile face
 '                      dot(vNormal.yzx, vPosition)));',
 '   vec2 texCoord = tileOffset + tileSizeUV * tileUV;',
-'   gl_FragColor = texture2D(tileMap, texCoord);',
-//'   gl_FragColor = vec4(texCoord.s, texCoord.t, 1.0, 1.0);', // to test texture coordinates without texture map
-//'         fract(vTexCoord * tileSizeUV));',
 '',
-//'   gl_FragColor = texture2D(tileMap, fract(vec2(vNormal.x, vNormal.y)));',
+'   gl_FragColor = texture2D(tileMap, texCoord);',
 '}'
 ].join('\n')
     },
@@ -333,6 +297,7 @@ Texture.prototype.paint = function(mesh, materials) {
   var isVoxelMesh = (materials) ? false : true;
   if (!isVoxelMesh) materials = self._expandName(materials);
 
+  /* TODO: pass to shader
   mesh.geometry.faces.forEach(function(face, i) {
     if (mesh.geometry.faceVertexUvs[0].length < 1) return;
 
@@ -379,8 +344,7 @@ Texture.prototype.paint = function(mesh, materials) {
       mesh.geometry.faceVertexUvs[0][i][j].set(atlasuv[j][0], 1 - atlasuv[j][1]);
     }
   });
-
-  mesh.geometry.uvsNeedUpdate = true;
+    */
 };
 
 Texture.prototype.sprite = function(name, w, h, cb) {
