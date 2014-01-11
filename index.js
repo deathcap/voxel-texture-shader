@@ -68,16 +68,17 @@ function Texture(game, opts) {
       uniforms: this.uniforms,
 // based on https://github.com/mikolalysenko/ao-shader/blob/master/lib/ao.vsh
       vertexShader: [
-'uniform float tileSizeUV;',
 'varying vec3 vNormal;',
-'varying vec2 vTileCoord;',
-'varying vec2 vTexCoord;',
+'varying vec3 vPosition;',
+//'varying vec2 vTileCoord;',
+//'varying vec2 vTexCoord;',
 '',
 'void main() {',
 //'   vec3 position = attrib0.xyz',   // three.js passes position in attribute 0 already
 //'   vNormal = 128.0 - normal.xyz;',  // and normal in attribute 1. but TODO: why 128.0-?
-/*
 '   vNormal = normal;',
+'   vPosition = position;',
+/*
 '',
 '   vec2 tileUV = vec2(dot(normal.zxy, position), dot(normal.yzx, position));',
 
@@ -88,7 +89,7 @@ function Texture(game, opts) {
 //'   vTexCoord = tileOffset + tileSize * fract(tileUV);',
 '   vTexCoord = tileSizeUV * floor(tileUV);',
 */
-'   vTexCoord = uv;',
+//'   vTexCoord = uv;',
 //'   vTexCoord = vec2(dot(position, vec3(normal.y - normal.z, 0, normal.x)),',
 //'                    dot(position, vec3(0, -abs(normal.x + normal.z), normal.y)));',
 '',
@@ -107,10 +108,12 @@ function Texture(game, opts) {
 'uniform float tileSize;',
 'uniform float atlasSize;',
 'uniform sampler2D tileMap;',
+'uniform float tileSizeUV;',
 '',
 'varying vec3 vNormal;',
-'varying vec2 vTileCoord;',
-'varying vec2 vTexCoord;',
+'varying vec3 vPosition;',
+//'varying vec2 vTileCoord;',
+//'varying vec2 vTexCoord;',
 '',
 'void main() {',
 //'   vec2 tileOffset = 2.0 * tileSize * tileCoord;',
@@ -119,8 +122,10 @@ function Texture(game, opts) {
 //'   vec2 texCoord = tileOffset + tileSize * fract(tileUV);',
 '',
 //'   gl_FragColor = texture2D(tileMap, vUv);',
-'',
-'   gl_FragColor = texture2D(tileMap, vTexCoord);',
+'   vec2 tileOffset = vec2(0.28125, 0.96875);', // test stone TODO: get from material
+'   vec2 texCoord = tileOffset + tileSizeUV * fract(vPosition.xz);', // TODO: vertical faces
+'   gl_FragColor = texture2D(tileMap, texCoord);',
+//'   gl_FragColor = vec4(texCoord.s, texCoord.t, 1.0, 1.0);', // to test texture coordinates without texture map
 //'         fract(vTexCoord * tileSizeUV));',
 '',
 //'   gl_FragColor = texture2D(tileMap, fract(vec2(vNormal.x, vNormal.y)));',
