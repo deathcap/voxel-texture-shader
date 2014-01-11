@@ -122,8 +122,10 @@ function Texture(game, opts) {
 //'   vec2 texCoord = tileOffset + tileSize * fract(tileUV);',
 '',
 //'   gl_FragColor = texture2D(tileMap, vUv);',
-'   vec2 tileOffset = vec2(0.28125, 0.96875);', // test stone TODO: get from material
-'   vec2 texCoord = tileOffset + tileSizeUV * fract(vPosition.xz);', // TODO: vertical faces
+'   vec2 tileOffset = vec2(0.28125, 0.96875);', // test stone/wood TODO: get from material
+'   vec2 tileUV = fract(vec2(dot(vNormal.zxy, vPosition),', // [0..1] offset within tile face
+'                      dot(vNormal.yzx, vPosition)));',
+'   vec2 texCoord = tileOffset + tileSizeUV * tileUV;',
 '   gl_FragColor = texture2D(tileMap, texCoord);',
 //'   gl_FragColor = vec4(texCoord.s, texCoord.t, 1.0, 1.0);', // to test texture coordinates without texture map
 //'         fract(vTexCoord * tileSizeUV));',
