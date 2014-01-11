@@ -76,6 +76,7 @@ function Texture(game, opts) {
 'void main() {',
 //'   vec3 position = attrib0.xyz',   // three.js passes position in attribute 0 already
 //'   vNormal = 128.0 - normal.xyz;',  // and normal in attribute 1. but TODO: why 128.0-?
+/*
 '   vNormal = normal;',
 '',
 '   vec2 tileUV = vec2(dot(normal.zxy, position), dot(normal.yzx, position));',
@@ -86,6 +87,8 @@ function Texture(game, opts) {
 
 //'   vTexCoord = tileOffset + tileSize * fract(tileUV);',
 '   vTexCoord = tileSizeUV * floor(tileUV);',
+*/
+'   vTexCoord = uv;',
 //'   vTexCoord = vec2(dot(position, vec3(normal.y - normal.z, 0, normal.x)),',
 //'                    dot(position, vec3(0, -abs(normal.x + normal.z), normal.y)));',
 '',
@@ -115,12 +118,12 @@ function Texture(game, opts) {
 '',
 //'   vec2 texCoord = tileOffset + tileSize * fract(tileUV);',
 '',
-//'   gl_FragColor = texture2D(map, vUv);',
+//'   gl_FragColor = texture2D(tileMap, vUv);',
 '',
 '   gl_FragColor = texture2D(tileMap, vTexCoord);',
 //'         fract(vTexCoord * tileSizeUV));',
 '',
-//'   gl_FragColor = texture2D(map, fract(vec2(vNormal.x, vNormal.y)));',
+//'   gl_FragColor = texture2D(tileMap, fract(vec2(vNormal.x, vNormal.y)));',
 '}'
 ].join('\n')
     },
