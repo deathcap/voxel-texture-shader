@@ -92,9 +92,10 @@ function Texture(game, opts) {
 'void main() {',
 '   vec2 tileUV = fract(vec2(dot(vNormal.zxy, vPosition),', // [0..1] offset within tile face
 '                      dot(vNormal.yzx, vPosition)));',
-//    0     1     2     3     4     5     6 
-// right bottom  back   -   front  top   left
-'    int faceIndex = 3 + int(sign(vNormal.x)) + int(sign(vNormal.y)) * 2 + int(sign(vNormal.z));',
+//    0     1     2     3     4     5     6       faceIndex
+//  top   front  left   -   right  back  bottom   side name
+//  0+0   +00    00+   000   00-   -00   0-0      normal vector
+'   int faceIndex = 3 - int(sign(vNormal.z)) - int(sign(vNormal.x)) * 2 - int(sign(vNormal.y)) * 3;'
 '
 '   vec2 texCoord = tileOffset + tileSizeUV * tileUV;',
 '',
