@@ -327,6 +327,29 @@ Texture.prototype.paint = function(mesh, materials) {
   var isVoxelMesh = (materials) ? false : true;
   if (!isVoxelMesh) materials = self._expandName(materials);
 
+  /* if create here, never seems to update?
+  mesh.surfaceMesh.material.materials[0].uniforms = 
+  {
+    tileMap: {type: 't', value: this.texture},
+    tileSize: {type: 'f', value: 16.0},  // size of one individual texture tile
+    tileSizeUV: {type: 'f', value: 16.0 / this.canvas.width}, // size of tile in UV units (0.0-1.0)
+    tileOffsets: {type: 'v2v', value: 
+      // test stone/wood TODO: get from material
+      [
+      new this.game.THREE.Vector2(0.28125*2, 0.96875),  // top
+      new this.game.THREE.Vector2(0.28125, 0.96875),  // front
+      new this.game.THREE.Vector2(0.28125, 0.96875),  // left
+
+      new this.game.THREE.Vector2(0, 0),              // unused (center)
+
+      new this.game.THREE.Vector2(0.28125, 0.96875),  // right
+      new this.game.THREE.Vector2(0.28125, 0.96875),  // back
+      new this.game.THREE.Vector2(0.28125, 0.96875)   // bottom
+      ],
+    }, 
+  };
+  */
+
   mesh.geometry.faces.forEach(function(face, i) {
     //if (mesh.geometry.faceVertexUvs[0].length < 1) return; 
 
@@ -378,9 +401,11 @@ Texture.prototype.paint = function(mesh, materials) {
     var topUV = atlasuv[0], rightUV = atlasuv[1], bottomUV = atlasuv[2], leftUV = atlasuv[3];
 
     var faceIndex = 3 - face.normal.z - 2*face.normal.x - 3*face.normal.y;
+    // TODO: fix this uniform update affecting ALL meshes! need to clone?
     mesh.surfaceMesh.material.materials[0].uniforms.tileOffsets.value[faceIndex] = new self.game.THREE.Vector2(topUV[0], 1.0 - topUV[1]); // TODO: set dimensions from other UV coords (vs tileSize)
     //mesh.surfaceMesh.material.materials[0].uniforms.tileOffsets.value[faceIndex] = new self.game.THREE.Vector2(atlasuv[0][0], atlasuv[0][1]);
   });
+  //mesh.surfaceMesh.material.materials[0].uniforms.tileOffsets.needsUpdate = true; // no apparent effect
 };
 
 Texture.prototype.sprite = function(name, w, h, cb) {
