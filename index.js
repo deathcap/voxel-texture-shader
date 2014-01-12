@@ -132,7 +132,7 @@ function Texture(game, opts) {
 '',
 '   //texCoord = vUv;', // original, stretch
 '   gl_FragColor = texture2D(tileMap, texCoord);',
-'   //gl_FragColor = vec4(vUv.s, vUv.t, 1.0, 1.0);', // to coordinates test without texturing
+'   //gl_FragColor = vec4(vUv.s*3.0, vUv.t*0.1, 1.0, 1.0);', // to coordinates test without texturing, false color
 '}'
 ].join('\n')
     },
@@ -393,9 +393,11 @@ Texture.prototype.paint = function(mesh, materials) {
     // faces on these meshes are flipped vertically, so we map in reverse
     // TODO: tops need rotate
     if (isVoxelMesh) {
+      /*
       if (face.normal.z === -1 || face.normal.x === 1) {
         atlasuv = uvrot(atlasuv, 90);
       }
+      */
       atlasuv = uvinvert(atlasuv);
     } else {
       atlasuv = uvrot(atlasuv, -90);
