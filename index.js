@@ -126,7 +126,7 @@ function Texture(game, opts) {
 '   else tileOffset = tileOffsets[3]; */',
 
 '   tileOffset.s = vUv.s;',
-'   tileOffset.t = 1.0 - vUv.t;',
+'   tileOffset.t = vUv.t;',
 
 '   vec2 texCoord = tileOffset + tileSizeUV * fract(tileUV);',
 '',
@@ -415,7 +415,7 @@ Texture.prototype.paint = function(mesh, materials) {
     
     for (var j = 0; j < mesh.geometry.faceVertexUvs[0][i].length; j++) {
       //mesh.geometry.faceVertexUvs[0][i][j].set(atlasuv[j][0], 1 - atlasuv[j][1]);
-      mesh.geometry.faceVertexUvs[0][i][j].set(topUV[0], topUV[1]); // set all to top (fixed tileSizeUV)
+      mesh.geometry.faceVertexUvs[0][i][j].set(topUV[0], 1.0 - topUV[1]); // set all to top (fixed tileSizeUV)
     }
   });
 
