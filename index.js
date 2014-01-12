@@ -116,14 +116,17 @@ function Texture(game, opts) {
 '   vec2 tileOffset;',
 
 // because ERROR: 0:45: '[]' : Index expression must be constant (and also, WebGL OpenGL ES 2.0 doesn't support switch/case)
-'   if (faceIndex == 0) tileOffset = tileOffsets[0];',
+'/*   if (faceIndex == 0) tileOffset = tileOffsets[0];',
 '   else if (faceIndex == 1) tileOffset = tileOffsets[1];',
 '   else if (faceIndex == 2) tileOffset = tileOffsets[2];',
 '   else if (faceIndex == 3) tileOffset = tileOffsets[3];',
 '   else if (faceIndex == 4) tileOffset = tileOffsets[4];',
 '   else if (faceIndex == 5) tileOffset = tileOffsets[5];',
 '   else if (faceIndex == 6) tileOffset = tileOffsets[6];',
-'   else tileOffset = tileOffsets[3];',
+'   else tileOffset = tileOffsets[3]; */',
+
+'   tileOffset.s = vUv.s;',
+'   tileOffset.t = 1.0 - vUv.t;',
 
 '   vec2 texCoord = tileOffset + tileSizeUV * fract(tileUV);',
 '',
@@ -411,7 +414,8 @@ Texture.prototype.paint = function(mesh, materials) {
     //mesh.surfaceMesh.material.materials[0].uniforms.tileOffsets.value[faceIndex] = new self.game.THREE.Vector2(atlasuv[0][0], atlasuv[0][1]);
     
     for (var j = 0; j < mesh.geometry.faceVertexUvs[0][i].length; j++) {
-      mesh.geometry.faceVertexUvs[0][i][j].set(atlasuv[j][0], 1 - atlasuv[j][1]);
+      //mesh.geometry.faceVertexUvs[0][i][j].set(atlasuv[j][0], 1 - atlasuv[j][1]);
+      mesh.geometry.faceVertexUvs[0][i][j].set(topUV[0], topUV[1]); // set all to top (fixed tileSizeUV)
     }
   });
 
