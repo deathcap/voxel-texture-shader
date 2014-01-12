@@ -1,6 +1,7 @@
 var tic = require('tic')();
 var createAtlas = require('atlaspack');
 var isTransparent = require('opaque').transparent;
+var touchup = require('touchup');
 
 module.exports = function(game, opts) {
   opts = opts || {};
@@ -46,7 +47,7 @@ function Texture(game, opts) {
 
   // create core atlas and texture
   this.atlas = createAtlas(this.canvas);
-  this.atlas.tilepad = true;
+  this.atlas.tilepad = false; //true; // not using tilepad since it repeats only half on each side (.5 .5 .5 / .5 1 .5 / .5 .5 .5, not 1 1 / 1 1)
   this._atlasuv = false;
   this._atlaskey = false;
   this.texture = new this.THREE.Texture(this.canvas);
@@ -254,7 +255,13 @@ Texture.prototype.pack = function(name, done) {
       if (isTransparent(img)) {
         self.transparents.push(name);
       }
-      pack(img);
+      // repeat 2x2 for mipmap padding 4-tap trick
+      var img2 = new Image();
+      img2.id = name;
+      img2.src = touchup.repeat(img, 2, 2);
+      img2.onload = function() {
+        pack(img2);
+      }
     };
     img.onerror = function() {
       console.error('Couldn\'t load URL [' + img.src + ']');
