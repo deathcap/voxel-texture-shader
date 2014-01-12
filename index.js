@@ -55,7 +55,20 @@ function Texture(game, opts) {
     tileMap: {type: 't', value: this.texture},
     tileSize: {type: 'f', value: 16.0},  // size of one individual texture tile
     tileSizeUV: {type: 'f', value: 16.0 / this.canvas.width}, // size of tile in UV units (0.0-1.0)
-    tileOffset: {type: 'v2', value: new this.game.THREE.Vector2(0.28125, 0.96875)}, // test stone/wood TODO: get from material
+    tileOffsets: {type: 'v2v', value: 
+      // test stone/wood TODO: get from material
+      [
+      new this.game.THREE.Vector2(0.28125*2, 0.96875),  // top
+      new this.game.THREE.Vector2(0.28125, 0.96875),  // front
+      new this.game.THREE.Vector2(0.28125, 0.96875),  // left
+
+      new this.game.THREE.Vector2(0, 0),              // unused (center)
+
+      new this.game.THREE.Vector2(0.28125, 0.96875),  // right
+      new this.game.THREE.Vector2(0.28125, 0.96875),  // back
+      new this.game.THREE.Vector2(0.28125, 0.96875)   // bottom
+      ],
+    }, 
   };
 
   this.options = {
@@ -84,20 +97,32 @@ function Texture(game, opts) {
 'uniform float tileSize;',
 'uniform sampler2D tileMap;',
 'uniform float tileSizeUV;',
-'uniform vec2 tileOffset;',
+'uniform vec2 tileOffsets[7];',
 '',
 'varying vec3 vNormal;',
 'varying vec3 vPosition;',
 '',
 'void main() {',
-'   vec2 tileUV = fract(vec2(dot(vNormal.zxy, vPosition),', // [0..1] offset within tile face
-'                      dot(vNormal.yzx, vPosition)));',
+'   vec2 tileUV = vec2(dot(vNormal.zxy, vPosition),', // [0..1] offset within tile face
+'                      dot(vNormal.yzx, vPosition));',
 //    0     1     2     3     4     5     6       faceIndex
 //  top   front  left   -   right  back  bottom   side name
 //  0+0   +00    00+   000   00-   -00   0-0      normal vector
-'   int faceIndex = 3 - int(sign(vNormal.z)) - int(sign(vNormal.x)) * 2 - int(sign(vNormal.y)) * 3;'
-'
-'   vec2 texCoord = tileOffset + tileSizeUV * tileUV;',
+'   int faceIndex = 3 - int(sign(vNormal.z)) - int(sign(vNormal.x)) * 2 - int(sign(vNormal.y)) * 3;',
+
+'   vec2 tileOffset;',
+
+// because ERROR: 0:45: '[]' : Index expression must be constant (and also, WebGL OpenGL ES 2.0 doesn't support switch/case)
+'   if (faceIndex == 0) tileOffset = tileOffsets[0];',
+'   else if (faceIndex == 1) tileOffset = tileOffsets[1];',
+'   else if (faceIndex == 2) tileOffset = tileOffsets[2];',
+'   else if (faceIndex == 3) tileOffset = tileOffsets[3];',
+'   else if (faceIndex == 4) tileOffset = tileOffsets[4];',
+'   else if (faceIndex == 5) tileOffset = tileOffsets[5];',
+'   else if (faceIndex == 6) tileOffset = tileOffsets[6];',
+'   else tileOffset = tileOffsets[3];',
+
+'   vec2 texCoord = tileOffset + tileSizeUV * fract(tileUV);',
 '',
 '   gl_FragColor = texture2D(tileMap, texCoord);',
 '}'
