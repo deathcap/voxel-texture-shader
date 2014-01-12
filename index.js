@@ -375,8 +375,10 @@ Texture.prototype.paint = function(mesh, materials) {
     }
     */
 
+    var topUV = atlasuv[0], rightUV = atlasuv[1], bottomUV = atlasuv[2], leftUV = atlasuv[3];
+
     var faceIndex = 3 - face.normal.z - 2*face.normal.x - 3*face.normal.y;
-    mesh.surfaceMesh.material.materials[0].uniforms.tileOffsets.value[faceIndex] = new self.game.THREE.Vector2(0.28125*faceIndex, 0.96875); // TODO: set actual material
+    mesh.surfaceMesh.material.materials[0].uniforms.tileOffsets.value[faceIndex] = new self.game.THREE.Vector2(topUV[0], 1.0 - topUV[1]); // TODO: set dimensions from other UV coords (vs tileSize)
     //mesh.surfaceMesh.material.materials[0].uniforms.tileOffsets.value[faceIndex] = new self.game.THREE.Vector2(atlasuv[0][0], atlasuv[0][1]);
   });
 };
