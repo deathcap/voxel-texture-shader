@@ -53,8 +53,22 @@ function Texture(game, opts) {
 
   this.uniforms = {
     tileMap: {type: 't', value: this.texture},
-    tileSize: {type: 'f', value: 16.0},  // size of one individual texture tile  TODO: move to attributes, v2v as tileOffsets
-    tileSizeUV: {type: 'f', value: 16.0 / this.canvas.width} // size of tile in UV units (0.0-1.0) 
+    tileSize: {type: 'f', value: 16.0},  // size of one individual texture tile
+    tileSizeUV: {type: 'f', value: 16.0 / this.canvas.width}, // size of tile in UV units (0.0-1.0)
+    tileOffsets: {type: 'v2v', value: 
+      // test stone/wood TODO: get from material
+      [
+      new this.game.THREE.Vector2(0.28125*2, 0.96875),  // top
+      new this.game.THREE.Vector2(0.28125, 0.96875),  // front
+      new this.game.THREE.Vector2(0.28125, 0.96875),  // left
+
+      new this.game.THREE.Vector2(0, 0),              // unused (center)
+
+      new this.game.THREE.Vector2(0.28125, 0.96875),  // right
+      new this.game.THREE.Vector2(0.28125, 0.96875),  // back
+      new this.game.THREE.Vector2(0.28125, 0.96875)   // bottom
+      ],
+    }, 
   };
 
   this.options = {
@@ -64,49 +78,16 @@ function Texture(game, opts) {
       transparent: false,
       side: this.THREE.DoubleSide,
 
-      // http://stackoverflow.com/questions/18733258/array-attributes-in-glsl-1-3 
-      // "Section 4.3.4 Inputs (GLSL 1.3)
-      // Vertex shader input variables (or attributes) receive per-vertex data. 
-      // ... They cannot be arrays"
-      attributes: {
-        // test stone/wood 
-        tileOffset0: {type: 'v2', value: new this.game.THREE.Vector2(0.28125*2, 0.96875)}, // top
-        tileOffset1: {type: 'v2', value: new this.game.THREE.Vector2(0.28125, 0.96875)}, // front
-        tileOffset2: {type: 'v2', value: new this.game.THREE.Vector2(0.28125, 0.96875)}, // left
-
-        tileOffset3: {type: 'v2', value: new this.game.THREE.Vector2(0.28125, 0.96875)}, // unused (center)
-
-        tileOffset4: {type: 'v2', value: new this.game.THREE.Vector2(0.28125, 0.96875)}, // right
-        tileOffset5: {type: 'v2', value: new this.game.THREE.Vector2(0.28125, 0.96875)}, // back
-        tileOffset6: {type: 'v2', value: new this.game.THREE.Vector2(0.28125, 0.96875)}  // bottom
-      },
-
       uniforms: this.uniforms,
 // based on https://github.com/mikolalysenko/ao-shader/blob/master/lib/ao.vsh
 // and http://0fps.wordpress.com/2013/07/09/texture-atlases-wrapping-and-mip-mapping/
       vertexShader: [
 'varying vec3 vNormal;',
 'varying vec3 vPosition;',
-'varying vec2 vTileOffsets[7];',
-'',
-'attribute vec2 tileOffset0;',
-'attribute vec2 tileOffset1;',
-'attribute vec2 tileOffset2;',
-'attribute vec2 tileOffset3;',
-'attribute vec2 tileOffset4;',
-'attribute vec2 tileOffset5;',
-'attribute vec2 tileOffset6;',
 '',
 'void main() {',
 '   vNormal = normal;',
 '   vPosition = position;',
-'   vTileOffsets[0] = tileOffset0;',
-'   vTileOffsets[1] = tileOffset1;',
-'   vTileOffsets[2] = tileOffset2;',
-'   vTileOffsets[3] = tileOffset3;',
-'   vTileOffsets[4] = tileOffset4;',
-'   vTileOffsets[5] = tileOffset5;',
-'   vTileOffsets[6] = tileOffset6;',
 '',
 '   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
 '}'
@@ -116,8 +97,8 @@ function Texture(game, opts) {
 'uniform float tileSize;',
 'uniform sampler2D tileMap;',
 'uniform float tileSizeUV;',
+'uniform vec2 tileOffsets[7];',
 '',
-'varying vec2 vTileOffsets[7];',
 'varying vec3 vNormal;',
 'varying vec3 vPosition;',
 '',
@@ -132,14 +113,14 @@ function Texture(game, opts) {
 '   vec2 tileOffset;',
 
 // because ERROR: 0:45: '[]' : Index expression must be constant (and also, WebGL OpenGL ES 2.0 doesn't support switch/case)
-'   if (faceIndex == 0) tileOffset = vTileOffsets[0];',
-'   else if (faceIndex == 1) tileOffset = vTileOffsets[1];',
-'   else if (faceIndex == 2) tileOffset = vTileOffsets[2];',
-'   else if (faceIndex == 3) tileOffset = vTileOffsets[3];',
-'   else if (faceIndex == 4) tileOffset = vTileOffsets[4];',
-'   else if (faceIndex == 5) tileOffset = vTileOffsets[5];',
-'   else if (faceIndex == 6) tileOffset = vTileOffsets[6];',
-'   else tileOffset = vTileOffsets[3];',
+'   if (faceIndex == 0) tileOffset = tileOffsets[0];',
+'   else if (faceIndex == 1) tileOffset = tileOffsets[1];',
+'   else if (faceIndex == 2) tileOffset = tileOffsets[2];',
+'   else if (faceIndex == 3) tileOffset = tileOffsets[3];',
+'   else if (faceIndex == 4) tileOffset = tileOffsets[4];',
+'   else if (faceIndex == 5) tileOffset = tileOffsets[5];',
+'   else if (faceIndex == 6) tileOffset = tileOffsets[6];',
+'   else tileOffset = tileOffsets[3];',
 
 '   vec2 texCoord = tileOffset + tileSizeUV * fract(tileUV);',
 '',
@@ -421,24 +402,10 @@ Texture.prototype.paint = function(mesh, materials) {
 
     var faceIndex = 3 - face.normal.z - 2*face.normal.x - 3*face.normal.y;
     // TODO: fix this uniform update affecting ALL meshes! need to clone?
-    //mesh.surfaceMesh.material.materials[0].uniforms.tileOffsets.value[faceIndex] = new self.game.THREE.Vector2(topUV[0], 1.0 - topUV[1]); // TODO: set dimensions from other UV coords (vs tileSize)
-    
-    var attrName = 'tileOffset' + faceIndex;
-    if (!mesh.surfaceMesh.material.materials[0].attributes[attrName]) {
-      console.log('no attribute ',attrName);
-      return;
-    }
-
-    mesh.surfaceMesh.material.materials[0].attributes[attrName].value[faceIndex] = new self.game.THREE.Vector2(topUV[0], 1.0 - topUV[1]); // TODO: set dimensions from other UV coords (vs tileSize)
-    //mesh.surfaceMesh.material.materials[0].attributes[attrName].needsUpdate = true;
-    /*
-    mesh.surfaceMesh.material.materials[0].attributes[attrName].value[faceIndex] = [];
-    for (var j = 0; j < mesh.geometry.faceVertexUvs[0][i].length; j++) {
-      mesh.surfaceMesh.material.materials[0].attributes[attrName].value[faceIndex].push(new self.game.THREE.Vector2(topUV[0], 1.0 - topUV[1])); // TODO: set dimensions from other UV coords (vs tileSize)
-    }*/
-  
+    mesh.surfaceMesh.material.materials[0].uniforms.tileOffsets.value[faceIndex] = new self.game.THREE.Vector2(topUV[0], 1.0 - topUV[1]); // TODO: set dimensions from other UV coords (vs tileSize)
     //mesh.surfaceMesh.material.materials[0].uniforms.tileOffsets.value[faceIndex] = new self.game.THREE.Vector2(atlasuv[0][0], atlasuv[0][1]);
   });
+  //mesh.surfaceMesh.material.materials[0].uniforms.tileOffsets.needsUpdate = true; // no apparent effect
 };
 
 Texture.prototype.sprite = function(name, w, h, cb) {
