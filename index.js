@@ -71,6 +71,7 @@ function Texture(game, opts) {
   this._atlasuv = false;
   this._atlaskey = false;
   this.texture = new this.THREE.Texture(this.canvas);
+  this.texture.anisotropy = this.game.view.renderer.getMaxAnisotropy();
   this.options.applyTextureParams(this.texture);
 
   if (useFlatColors) {
