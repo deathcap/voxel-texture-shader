@@ -327,9 +327,8 @@ Texture.prototype.paint = function(mesh, materials) {
   var isVoxelMesh = (materials) ? false : true;
   if (!isVoxelMesh) materials = self._expandName(materials);
 
-  /* TODO: pass to shader
   mesh.geometry.faces.forEach(function(face, i) {
-    if (mesh.geometry.faceVertexUvs[0].length < 1) return;
+    //if (mesh.geometry.faceVertexUvs[0].length < 1) return; 
 
     if (isVoxelMesh) {
       var index = Math.floor(face.color.b*255 + face.color.g*255*255 + face.color.r*255*255*255);
@@ -370,11 +369,16 @@ Texture.prototype.paint = function(mesh, materials) {
     } else {
       atlasuv = uvrot(atlasuv, -90);
     }
+    /*
     for (var j = 0; j < mesh.geometry.faceVertexUvs[0][i].length; j++) {
       mesh.geometry.faceVertexUvs[0][i][j].set(atlasuv[j][0], 1 - atlasuv[j][1]);
     }
-  });
     */
+
+    var faceIndex = 3 - face.normal.z - 2*face.normal.x - 3*face.normal.y;
+    mesh.surfaceMesh.material.materials[0].uniforms.tileOffsets.value[faceIndex] = new self.game.THREE.Vector2(0.28125*faceIndex, 0.96875); // TODO: set actual material
+    //mesh.surfaceMesh.material.materials[0].uniforms.tileOffsets.value[faceIndex] = new self.game.THREE.Vector2(atlasuv[0][0], atlasuv[0][1]);
+  });
 };
 
 Texture.prototype.sprite = function(name, w, h, cb) {
