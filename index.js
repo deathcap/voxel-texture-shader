@@ -85,13 +85,46 @@ function Texture(game, opts) {
 'varying vec3 vNormal;',
 'varying vec3 vPosition;',
 'varying vec2 vUv;',
+
+// based on @mikolalysenko's code at:
+// http://0fps.wordpress.com/2013/07/09/texture-atlases-wrapping-and-mip-mapping/
+// https://github.com/mikolalysenko/ao-shader/blob/master/lib/ao.fsh
+// https://github.com/mikolalysenko/ao-shader/blob/master/lib/ao.vsh
+
+'vec4 fourTapSample(vec2 tileOffset, //Tile offset in the atlas ',
+'                  vec2 tileUV, //Tile coordinate (as above)',
+'                  float tileSize, //Size of a tile in atlas',
+'                  sampler2D atlas) {',
+'  //Initialize accumulators',
+'  vec4 color = vec4(0.0, 0.0, 0.0, 0.0);',
+'  float totalWeight = 0.0;',
+'',
+'  for(int dx=0; dx<2; ++dx)',
+'  for(int dy=0; dy<2; ++dy) {',
+'    //Compute coordinate in 2x2 tile patch',
+'    vec2 tileCoord = 2.0 * fract(0.5 * (tileUV + vec2(dx,dy)));',
+'',
+'    //Weight sample based on distance to center',
+'    float w = pow(1.0 - max(abs(tileCoord.x-1.0), abs(tileCoord.y-1.0)), 16.0);',
+'',
+'    //Compute atlas coord',
+'    vec2 atlasUV = tileOffset + tileSize * tileCoord;',
+'',
+'    //Sample and accumulate',
+'    color += w * texture2D(atlas, atlasUV);',
+'    totalWeight += w;',
+'  }',
+'',
+'  //Return weighted color',
+'  return color / totalWeight;',
+'}',
 '',
 'void main() {',
 // use world coordinates to repeat [0..1] offsets, within _each_ tile face
 '   vec2 tileUV = vec2(dot(vNormal.zxy, vPosition),',
 '                      dot(vNormal.yzx, vPosition));',
 
-'   tileUV = fract(tileUV);',
+'   vec2 tileUVFract = fract(tileUV);',
 '',
 '    // back: flip 180',
 '    if (vNormal.z < 0.0) tileUV.t = 1.0 - tileUV.t;',
@@ -115,13 +148,15 @@ function Texture(game, opts) {
 // material type (_not_ interpolated; same for all vertices).
 '   vec2 tileOffset = vUv;',
 
-// index tile at offset into texture atlas, see references:
-// http://0fps.wordpress.com/2013/07/09/texture-atlases-wrapping-and-mip-mapping/
-// https://github.com/mikolalysenko/ao-shader/blob/master/lib/ao.fsh
-// https://github.com/mikolalysenko/ao-shader/blob/master/lib/ao.vsh
-'   vec2 texCoord = tileOffset + tileSizeUV * tileUV;',
+// index tile at offset into texture atlas
+'   vec2 texCoord = tileOffset + tileSizeUV * tileUVFract;',
 '',
 '   gl_FragColor = texture2D(tileMap, texCoord);',
+    
+'    gl_FragColor = fourTapSample(tileOffset, //Tile offset in the atlas ',
+'                  tileUV, //Tile coordinate (as above)',
+'                  tileSizeUV, //Size of a tile in atlas',
+'                  tileMap);',
 '   if (gl_FragColor.a < 0.001) discard; // transparency',
 '}'
 ].join('\n')
