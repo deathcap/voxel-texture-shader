@@ -37,6 +37,8 @@ function Texture(game, opts) {
   var useFlatColors = opts.materialFlatColor === true;
   delete opts.materialFlatColor;
 
+  this.useFourTap = opts.useFourTap === undefined ? true : opts.useFourTap;
+
   // create a canvas for the texture atlas
   this.canvas = (typeof document !== 'undefined') ? document.createElement('canvas') : {};
   this.canvas.width = opts.atlasWidth || 512;
@@ -47,7 +49,7 @@ function Texture(game, opts) {
 
   // create core atlas and texture
   this.atlas = createAtlas(this.canvas);
-  this.atlas.tilepad = false; //true; // not using tilepad since it repeats only half on each side (.5 .5 .5 / .5 1 .5 / .5 .5 .5, not 1 1 / 1 1)
+  this.atlas.tilepad = !this.useFourTap; // for 4-tap, not using tilepad since it repeats only half on each side (.5 .5 .5 / .5 1 .5 / .5 .5 .5, not 1 1 / 1 1)
   this._atlasuv = false;
   this._atlaskey = false;
   this.texture = new this.THREE.Texture(this.canvas);
@@ -62,7 +64,7 @@ function Texture(game, opts) {
       uniforms: {
         tileMap: {type: 't', value: this.texture},
         tileSize: {type: 'f', value: 16.0},  // size of one individual texture tile
-        tileSizeUV: {type: 'f', value: 16.0 / this.canvas.width} // size of tile in UV units (0.0-1.0)
+        tileSizeUV: {type: 'f', value: 16.0 / this.canvas.width}, // size of tile in UV units (0.0-1.0)
       },
       vertexShader: [
 'varying vec3 vNormal;',
@@ -125,7 +127,6 @@ function Texture(game, opts) {
 '   vec2 tileUV = vec2(dot(vNormal.zxy, vPosition),',
 '                      dot(vNormal.yzx, vPosition));',
 
-'   vec2 tileUVFract = fract(tileUV);',
 '',
 '    // back: flip 180',
 '    if (vNormal.z < 0.0) tileUV.t = 1.0 - tileUV.t;',
@@ -149,15 +150,18 @@ function Texture(game, opts) {
 // material type (_not_ interpolated; same for all vertices).
 '   vec2 tileOffset = vUv;',
 
-// index tile at offset into texture atlas
-'   vec2 texCoord = tileOffset + tileSizeUV * tileUVFract;',
 '',
-'   gl_FragColor = texture2D(tileMap, texCoord);',
-    
-'    gl_FragColor = fourTapSample(tileOffset, //Tile offset in the atlas ',
-'                  tileUV, //Tile coordinate (as above)',
-'                  tileSizeUV, //Size of a tile in atlas',
-'                  tileMap);',
+(this.useFourTap // TODO: use glsl conditional compilation?
+  ? [
+    '     gl_FragColor = fourTapSample(tileOffset, //Tile offset in the atlas ',
+    '                  tileUV, //Tile coordinate (as above)',
+    '                  tileSizeUV, //Size of a tile in atlas',
+    '                  tileMap);'].join('\n') 
+  : [
+    // index tile at offset into texture atlas
+    'vec2 texCoord = tileOffset + tileSizeUV * fract(tileUV);',
+    'gl_FragColor = texture2D(tileMap, texCoord);'].join('\n')),
+'',
 '   if (gl_FragColor.a < 0.001) discard; // transparency',
 '}'
 ].join('\n')
@@ -255,12 +259,16 @@ Texture.prototype.pack = function(name, done) {
       if (isTransparent(img)) {
         self.transparents.push(name);
       }
-      // repeat 2x2 for mipmap padding 4-tap trick
-      var img2 = new Image();
-      img2.id = name;
-      img2.src = touchup.repeat(img, 2, 2);
-      img2.onload = function() {
-        pack(img2);
+      if (self.useFourTap) {
+        // repeat 2x2 for mipmap padding 4-tap trick
+        var img2 = new Image();
+        img2.id = name;
+        img2.src = touchup.repeat(img, 2, 2);
+        img2.onload = function() {
+          pack(img2);
+        }
+      } else {
+        pack(img);
       }
     };
     img.onerror = function() {
