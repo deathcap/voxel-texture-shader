@@ -84,10 +84,12 @@ function Texture(game, opts) {
       vertexShader: [
 'varying vec3 vNormal;',
 'varying vec3 vPosition;',
+'varying vec2 vUv;', // to set from three.js's "uv" attribute passed in
 '',
 'void main() {',
 '   vNormal = normal;',
 '   vPosition = position;',
+'   vUv = uv;',
 '',
 '   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
 '}'
@@ -101,6 +103,7 @@ function Texture(game, opts) {
 '',
 'varying vec3 vNormal;',
 'varying vec3 vPosition;',
+'varying vec2 vUv;',
 '',
 'void main() {',
 '   vec2 tileUV = vec2(dot(vNormal.zxy, vPosition),', // [0..1] offset within tile face
@@ -124,7 +127,9 @@ function Texture(game, opts) {
 
 '   vec2 texCoord = tileOffset + tileSizeUV * fract(tileUV);',
 '',
+'   //texCoord = vUv;', // original, stretch
 '   gl_FragColor = texture2D(tileMap, texCoord);',
+'   //gl_FragColor = vec4(vUv.s, vUv.t, 1.0, 1.0);', // to coordinates test without texturing
 '}'
 ].join('\n')
     },
@@ -351,7 +356,7 @@ Texture.prototype.paint = function(mesh, materials) {
   */
 
   mesh.geometry.faces.forEach(function(face, i) {
-    //if (mesh.geometry.faceVertexUvs[0].length < 1) return; 
+    if (mesh.geometry.faceVertexUvs[0].length < 1) return;
 
     if (isVoxelMesh) {
       var index = Math.floor(face.color.b*255 + face.color.g*255*255 + face.color.r*255*255*255);
@@ -404,8 +409,13 @@ Texture.prototype.paint = function(mesh, materials) {
     // TODO: fix this uniform update affecting ALL meshes! need to clone?
     mesh.surfaceMesh.material.materials[0].uniforms.tileOffsets.value[faceIndex] = new self.game.THREE.Vector2(topUV[0], 1.0 - topUV[1]); // TODO: set dimensions from other UV coords (vs tileSize)
     //mesh.surfaceMesh.material.materials[0].uniforms.tileOffsets.value[faceIndex] = new self.game.THREE.Vector2(atlasuv[0][0], atlasuv[0][1]);
+    
+    for (var j = 0; j < mesh.geometry.faceVertexUvs[0][i].length; j++) {
+      mesh.geometry.faceVertexUvs[0][i][j].set(atlasuv[j][0], 1 - atlasuv[j][1]);
+    }
   });
-  //mesh.surfaceMesh.material.materials[0].uniforms.tileOffsets.needsUpdate = true; // no apparent effect
+
+  mesh.geometry.uvsNeedUpdate = true;
 };
 
 Texture.prototype.sprite = function(name, w, h, cb) {
