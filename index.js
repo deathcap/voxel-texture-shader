@@ -444,9 +444,16 @@ Texture.prototype._afterLoading = function() {
     // set manual mipmaps
     self.texture.mipmaps[0] = self.canvas;
     console.log(self.canvas,self.canvas.width,self.canvas.height);
-    for (var i = 1; i < 8; i += 1) {
-      self.texture.mipmaps[i] = mipmap(self.canvas.width >> i);
-    }
+    var mipWidth = self.canvas.width;
+    do {
+      mipWidth >>= 1;
+      self.texture.mipmaps.push(mipmap(mipWidth));
+      // create mipmaps for down to one pixel
+      // http://0fps.wordpress.com/2013/07/09/texture-atlases-wrapping-and-mip-mapping/
+      // "Storing the higher mip levels is not strictly necessary, and in vanilla OpenGL we 
+      // could use the GL_TEXTURE_MAX_LEVEL flag to avoid wasting this extra memory.  
+      // Unfortunately on WebGL/OpenGL ES this option isn’t available"
+    } while (mipWidth > 1);
 
     self.texture.needsUpdate = true;
     self.material.needsUpdate = true;
