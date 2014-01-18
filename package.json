@@ -31,8 +31,7 @@
   "dependencies": {
     "opaque": "0.0.1",
     "tic": "~0.2.1",
-    "atlaspack": "~0.2.5",
-    "touchup": "~0.0.1",
+    "atlaspack": "git://github.com/deathcap/atlaspack.git#c2e565c00f07f1d9493fc3f2bf37b0625f000248",
     "voxel-fakeao": "~0.1.1"
   },
   "devDependencies": {

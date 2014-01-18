@@ -1,7 +1,6 @@
 var tic = require('tic')();
 var createAtlas = require('atlaspack');
 var isTransparent = require('opaque').transparent;
-var touchup = require('touchup');
 
 module.exports = function(game, opts) {
   opts = opts || {};
@@ -51,6 +50,9 @@ function Texture(game, opts) {
   // create core atlas and texture
   this.atlas = createAtlas(this.canvas);
   this.atlas.tilepad = !this.useFourTap; // for 4-tap, not using tilepad since it repeats only half on each side (.5 .5 .5 / .5 1 .5 / .5 .5 .5, not 1 1 / 1 1)
+  this.atlas.tilepad = true;
+  this.atlas.tilepadAmount = 2.0;  // 2x2 doubling, without 1/2 shift
+  this.atlas.tilepadInUV = false;  // consider the repeated textures as one unit for UV
   this._atlasuv = false;
   this._atlaskey = false;
   this.texture = new this.THREE.Texture(this.canvas);
@@ -355,6 +357,8 @@ Texture.prototype.pack = function(name, done) {
     if (node === false) {
       self.atlas = self.atlas.expand(img);
       self.atlas.tilepad = true;
+      self.atlas.tilepadAmount = 2.0;
+      self.atlas.tilepadInUV = false;
     }
     done();
   }
@@ -363,11 +367,11 @@ Texture.prototype.pack = function(name, done) {
       if (isTransparent(img)) {
         self.transparents.push(name);
       }
-      if (self.useFourTap) {
+      if (false && self.useFourTap) { // XXX TODO: replace with atlaspack tilepad
         // repeat 2x2 for mipmap padding 4-tap trick
         var img2 = new Image();
         img2.id = name;
-        img2.src = touchup.repeat(img, 2, 2);
+        img2.src = require('touchup').repeat(img, 1, 1);
         img2.onload = function() {
           pack(img2);
         }
@@ -456,7 +460,7 @@ Texture.prototype._afterLoading = function() {
 
     self.texture.needsUpdate = true;
     self.material.needsUpdate = true;
-    //window.open(self.canvas.toDataURL());
+    console.log(self.canvas.toDataURL());
     if (self._meshQueue.length > 0) {
       self._meshQueue.forEach(function(queue, i) {
         self.paint.apply(queue.self, queue.args);
