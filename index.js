@@ -425,6 +425,29 @@ Texture.prototype._afterLoading = function() {
     self.atlas.index().forEach(function(key) {
       self._atlaskey[key.name] = key;
     });
+
+    var mipmap = function(size, color) {
+      // based on http://threejs.org/examples/webgl_materials_texture_manualmipmap.html
+      var mipCanvas = document.createElement('canvas');
+      var context = mipCanvas.getContext('2d');
+
+      mipCanvas.width = mipCanvas.height = size;
+      console.log(size);
+
+      // TODO
+      context.fillStyle = '#444';
+      context.fillRect(0, 0, size, size);
+
+      return mipCanvas;
+    };
+
+    // set manual mipmaps
+    self.texture.mipmaps[0] = self.canvas;
+    console.log(self.canvas,self.canvas.width,self.canvas.height);
+    for (var i = 1; i < 8; i += 1) {
+      self.texture.mipmaps[i] = mipmap(self.canvas.width >> i);
+    }
+
     self.texture.needsUpdate = true;
     self.material.needsUpdate = true;
     //window.open(self.canvas.toDataURL());
