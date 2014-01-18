@@ -434,8 +434,32 @@ Texture.prototype._afterLoading = function() {
       mipCanvas.width = mipCanvas.height = size;
       console.log(size);
 
-      // TODO: per tile
-      context.drawImage(self.canvas, 0, 0, size, size);
+      // source image
+      var tileWidth = 16;
+      var tileHeight = 16;
+
+      var scale = self.canvas.width / size;
+
+      // scale each tile individually 
+      for (var tx = 0; tx < self.canvas.width / tileWidth; tx += 1) { // TODO: only bother copying tiles that exist
+        for (var ty = 0; ty < self.canvas.height / tileHeight; ty += 1) {
+          var sx = tx * tileWidth;
+          var sy = ty * tileHeight;
+          var sw = tileWidth;
+          var sh = tileHeight;
+
+          var dx = sx / scale;
+          var dy = sy / scale;
+          var dw = sw / scale;
+          var dh = sh / scale;
+
+          context.drawImage(self.canvas, sx, sy, sw, sh, dx, dy, dw, dh); // TODO: sinc interpolation
+        }
+      }
+      console.log(size,mipCanvas.toDataURL());
+
+      // whole image - causes artifacts
+      //context.drawImage(self.canvas, 0, 0, size, size);
 
       return mipCanvas;
     };
