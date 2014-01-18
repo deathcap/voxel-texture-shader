@@ -434,9 +434,8 @@ Texture.prototype._afterLoading = function() {
       mipCanvas.width = mipCanvas.height = size;
       console.log(size);
 
-      // TODO
-      context.fillStyle = '#444';
-      context.fillRect(0, 0, size, size);
+      // TODO: per tile
+      context.drawImage(self.canvas, 0, 0, size, size);
 
       return mipCanvas;
     };
