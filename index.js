@@ -4,27 +4,27 @@ var isTransparent = require('opaque').transparent;
 var touchup = require('touchup');
 
 module.exports = function(game, opts) {
-  opts = opts || {};
-    
+  if (opts === undefined) opts = game;
+
   opts.useAtlas = (opts.useAtlas === undefined) ? true : opts.useAtlas;
 
   if (opts.useAtlas)
-    return new Texture(game, opts);
+    return new Texture(opts);
   else
-    return new TextureSimple(game, opts);
+    return new TextureSimple(opts);
 };
 
 function reconfigure(old) {
-  var ret = module.exports(old.game, old.opts);
+  var ret = module.exports(old.opts);
   ret.load(old.names);
 
   return ret;
 }
 
-function Texture(game, opts) {
-  if (!(this instanceof Texture)) return new Texture(game, opts || {});
+function Texture(opts) {
+  if (!(this instanceof Texture)) return new Texture(opts || {});
   var self = this;
-  this.game = game;
+  this.game = opts.game;
   this.opts = opts;
   this.THREE = this.game.THREE;
   this.names = [];
@@ -623,8 +623,7 @@ function each(arr, it, done) {
 // Support for textures without atlas ("simple" textures), as in 0.4.0
 ////
 
-function TextureSimple(game, opts) {
-  if (!(this instanceof TextureSimple)) return new TextureSimple(game, opts || {});
+function TextureSimple(opts) {
   var self = this;
   this.game = game;
 
