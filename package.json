@@ -1,8 +1,8 @@
 {
-  "name": "voxel-texture",
-  "description": "A texture helper for voxeljs",
-  "version": "0.5.7",
-  "homepage": "https://github.com/shama/voxel-texture",
+  "name": "voxel-texture-shader",
+  "description": "A custom shader for texturing voxels in voxeljs",
+  "version": "0.0.1",
+  "homepage": "https://github.com/deathcap/voxel-texture-shader",
   "author": {
     "name": "Kyle Robinson Young",
     "email": "kyle@dontkry.com",
@@ -10,15 +10,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/shama/voxel-texture.git"
+    "url": "git://github.com/deathcap/voxel-texture-shader.git"
   },
   "bugs": {
-    "url": "https://github.com/shama/voxel-texture/issues"
+    "url": "https://github.com/deathcap/voxel-texture-shader/issues"
   },
   "licenses": [
     {
       "type": "MIT",
-      "url": "https://github.com/shama/voxel-texture/blob/master/LICENSE-MIT"
+      "url": "https://github.com/deathcap/voxel-texture-shader/blob/master/LICENSE-MIT"
     }
   ],
   "engines": {
@@ -43,6 +43,9 @@
   },
   "keywords": [
     "voxel",
-    "texture"
+    "texture",
+    "shader",
+    "fourtap",
+    "atlas"
   ]
 }
