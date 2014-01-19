@@ -1,24 +1,27 @@
-# voxel-texture
+# voxel-texture-shader
 
-> Add textures to an atlas and set UV mapping on geometries. Used for texturing
-> in [voxel.js](http://voxeljs.com).
+Shaders for texturing voxels in voxel.js
 
-View [the demo](http://shama.github.com/voxel-texture).
+Based on [voxel-texture](https://github.com/shama/voxel-texture) by @shama, mostly compatible but
+several differences:
 
-**ATTENTION! v0.5.0 has changed dramatically. This library is no longer is
-materials API but just loads textures onto an atlas and sets UV mappings.**
-The old API without atlases can be enabled by setting the 'useAtlas' option to false.
+* Supports greedy meshing, tiling the voxel textures appropriately 
+(using techniques by @mikolalysenko in [Texture atlases, wrapping and mip mapping](http://0fps.wordpress.com/2013/07/09/texture-atlases-wrapping-and-mip-mapping/))
+* Supports optional four-tap sampling to fix texture seams (also based on @mikolalysenko's work)
+* Loads textures using [artpacks](https://github.com/deathcap/artpacks) (instead of individual files in `texturePath`)
+
+Experimental toggling between voxel-texture-shader and voxel-texture: [https://github.com/deathcap/voxel-debug](https://github.com/deathcap/voxel-debug)
 
 ## example
 
 ```js
 // create a material engine
-var textureEngine = require('voxel-texture')({
+var textureEngine = require('voxel-texture-shader')({
   // a copy of your voxel.js game
   game: game,
 
-  // path to your textures
-  texturePath: 'textures/'
+  // artpacks instance
+  artPacks: artPacks
 });
 
 // load textures and it returns textures just loaded
@@ -36,13 +39,13 @@ textureEngine.load(['grass', 'dirt', 'grass_dirt'], function(textures) {
 
 ## api
 
-### `require('voxel-texture')(options)`
+### `require('voxel-texture-shader')(options)`
 Returns a new texture engine instance. Must pass a copy of your voxel.js
 `game`. `options` defaults to:
 
 ```js
 {
-  texturePath: '/textures/',
+  artPacks: artPacks,
   materialParams: { ambient: 0xbbbbbb },
   materialType: THREE.MeshLambertMaterial,
   applyTextureParams: function(map) {
@@ -154,33 +157,6 @@ game.on('tick', function(dt) {
   textureEngine.tick(dt);
 });
 ```
-
-## install
-With [npm](http://npmjs.org) do:
-
-```
-npm install voxel-texture
-```
-
-## release history
-* 0.5.7 - Separately load transparent textures. Fill atlas bg in black. Replace AO with voxel-fakeao. Dynamically set amount of sides with texturing, thanks @morganrallen!
-* 0.5.6 - Add materialFlatColor option for using simple flat colors instead of textures.
-* 0.5.5 - Only call document.createElement if available.
-* 0.5.4 - Allow null placeholder materials.
-* 0.5.3 - Force texture to dimensions that are power of 2 for mipmaps.
-* 0.5.2 - Use atlaspack tilepad to avoid mipmap texture bleed.
-* 0.5.1 - Fix CORS support.
-* 0.5.0 - No longer a materials API. Loads textures onto an atlas and sets UV mappings.
-* 0.4.0 - Add findIndex for finding block type index.
-* 0.3.3 - Move three to peerDependencies. thanks @niftylettuce!
-* 0.3.2 - Use face.color instead of face.vertexColors[0]
-* 0.3.1 - Support for animated materials.
-* 0.3.0 - refactored entire module. removed rotate. added load, get, paint, sprite methods. auto detect transparent.
-* 0.2.2 - ability to set material type and params. thanks @hughsk!
-* 0.2.1 - fix rotation of front and left textures when loading mesh
-* 0.2.0 - ability to set multiple textures on voxel meshes
-* 0.1.1 - fix texture sharpness
-* 0.1.0 - initial release
 
 ## license
 Copyright (c) 2013 Kyle Robinson Young  
