@@ -38,7 +38,7 @@ function Texture(game, opts) {
   var useFlatColors = opts.materialFlatColor === true;
   delete opts.materialFlatColor;
 
-  this.useFourTap = opts.useFourTap === undefined ? true : opts.useFourTap;
+  this.useFourTap = opts.useFourTap = opts.useFourTap === undefined ? true : opts.useFourTap;
 
   // create a canvas for the texture atlas
   this.canvas = (typeof document !== 'undefined') ? document.createElement('canvas') : {};
@@ -50,7 +50,7 @@ function Texture(game, opts) {
 
   // create core atlas and texture
   this.atlas = createAtlas(this.canvas);
-  this.atlas.tilepad = (opts.tilepad === undefined ? true : opts.tilepad);
+  this.atlas.tilepad = opts.tilepad = opts.tilepad === undefined ? true : opts.tilepad;
   this._atlasuv = false;
   this._atlaskey = false;
   this.texture = new this.THREE.Texture(this.canvas);
