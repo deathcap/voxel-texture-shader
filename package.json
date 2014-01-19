@@ -24,22 +24,12 @@
   "engines": {
     "node": ">= 0.8.0"
   },
-  "scripts": {
-    "start": "cd example && ../node_modules/.bin/browservefy world.js 8080 -- -d",
-    "gh-pages": "cp -R ./example/* ./ && browserify world.js -o world.js"
-  },
   "dependencies": {
     "opaque": "0.0.1",
     "tic": "~0.2.1",
     "atlaspack": "~0.2.5",
     "touchup": "~0.0.1",
     "voxel-fakeao": "~0.1.1"
-  },
-  "devDependencies": {
-    "voxel-engine": "~0.17.1",
-    "voxel-debris": "~0.0.4",
-    "browservefy": "0.0.10",
-    "voxel-player": "~0.1.0"
   },
   "keywords": [
     "voxel",
