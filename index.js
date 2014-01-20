@@ -33,8 +33,8 @@ function Texture(opts) {
 
   // create a canvas for the texture atlas
   this.canvas = (typeof document !== 'undefined') ? document.createElement('canvas') : {};
-  this.canvas.width = opts.atlasWidth || 512;
-  this.canvas.height = opts.atlasHeight || 512;
+  this.canvas.width = opts.atlasWidth || 2048;
+  this.canvas.height = opts.atlasHeight || 2048;
   var ctx = this.canvas.getContext('2d');
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
