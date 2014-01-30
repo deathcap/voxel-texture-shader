@@ -22,7 +22,7 @@ function Texture(opts) {
   this.materials = [];
   this.transparents = [];
   this.artPacks = opts.artPacks;
-  if (!this.artPacks) throw new Error('voxel-texture requires artPacks option');
+  if (!this.artPacks) throw new Error('voxel-texture-shader requires artPacks option');
   this.loading = 0;
   this.ao = require('voxel-fakeao')(this.game);
 
@@ -339,10 +339,6 @@ Texture.prototype.load = function(names, done) {
   }
 };
 
-Texture.prototype.getMesh = function() {
-  return this.material;
-}
-
 Texture.prototype.pack = function(name, done) {
   var self = this;
   function pack(img) {
@@ -452,10 +448,6 @@ Texture.prototype._powerof2 = function(done) {
   this.canvas.width = this.canvas.height = pow2(w);
   this.canvas.getContext('2d').putImageData(old, 0, 0);
   done();
-};
-
-Texture.prototype.paintMesh = function(mesh) {
-  this.paint(mesh);
 };
 
 Texture.prototype.paint = function(mesh, materials) {
