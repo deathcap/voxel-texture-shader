@@ -387,8 +387,6 @@ Texture.prototype.find = function(name) {
   return type;
 };
 
-Texture.prototype.findIndex = Texture.prototype.find; // compatibility
-
 Texture.prototype._expandName = function(name) {
   if (name === null) return Array(6);
   if (name.top) return [name.back, name.front, name.top, name.bottom, name.left, name.right];
