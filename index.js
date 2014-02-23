@@ -48,10 +48,12 @@ function Texture(opts) {
 
   var THREE = this.game.THREE;
 
-  this.materialParams = {
+  var getMaterialParams = function(transparent) {
+    var materialParams = {
       ambient: 0xbbbbbb,
-      transparent: false,
+      transparent: transparent,
       side: THREE.DoubleSide,
+      lights: [], // force lights refresh to setup uniforms, three.js WebGLRenderer line 4323
 
 
     // based on three.js/src/renderers/WebGLShaders.js lambert
@@ -267,19 +269,18 @@ function Texture(opts) {
 
       "}"
 		].join("\n")
-	};
-
-  this.materialTransparentParams = {
-      ambient: 0xbbbbbb,
-      transparent: true,
-      side: this.THREE.DoubleSide,
       //depthWrite: false,
       //depthTest: false
-      // TODO
+	  };
+
+    materialParams.uniforms.tileMap.value = this.texture;
+
+    return materialParams;
   };
 
-  this.materialParams.lights = []; // force lights refresh to setup uniforms, three.js WebGLRenderer line 4323
-  this.materialParams.uniforms.tileMap.value = this.texture;
+  this.materialParams = getMaterialParams.call(this, false);
+  this.materialTransparentParams = getMaterialParams.call(this, true);
+
   this.texture.magFilter = this.THREE.NearestFilter;
   this.texture.minFilter = this.THREE.LinearMipMapLinearFilter;
 
@@ -484,7 +485,7 @@ Texture.prototype.paint = function(mesh, materials) {
     if (!atlasuv) return;
 
     // If a transparent texture use transparent material
-    face.materialIndex = 0; //(self.transparents.indexOf(name) !== -1) ? 1 : 0; // XXX: always use same material TODO: do we need separate opaque/transparent?
+    face.materialIndex = (self.transparents.indexOf(name) !== -1) ? 1 : 0;
 
     // 0 -- 1
     // |    |
