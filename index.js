@@ -162,7 +162,7 @@ function Texture(opts) {
 
 'vec4 fourTapSample(vec2 tileOffset, //Tile offset in the atlas ',
 '                  vec2 tileUV, //Tile coordinate (as above)',
-'                  sampler2D atlas) {',
+'                  sampler2D atlas) {', // }
 '  //Initialize accumulators',
 '  vec4 color = vec4(0.0, 0.0, 0.0, 0.0);',
 '  float totalWeight = 0.0;',
