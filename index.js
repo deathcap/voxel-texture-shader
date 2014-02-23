@@ -337,6 +337,25 @@ Texture.prototype.load = function(names, done) {
   }
 };
 
+Texture.prototype.getTransparentVoxelTypes = function() {
+  var transparentMap = {};
+
+  for (var i = 0; i < this.materials.length; i += 1) {
+    var blockIndex = i + 1;
+    var materialSlice = this.materials[i];
+
+    var anyTransparent = false;
+    for (var j = 0; j < materialSlice.length; j += 1) {
+      anyTransparent |= this.transparents.indexOf(materialSlice[j]) !== -1;
+    }
+
+    if (anyTransparent)
+      transparentMap[blockIndex] = true;
+  }
+
+  return transparentMap;
+};
+
 Texture.prototype.pack = function(name, done) {
   var self = this;
   function pack(img) {
