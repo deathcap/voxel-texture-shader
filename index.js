@@ -48,9 +48,7 @@ function Texture(opts) {
 
   var THREE = this.game.THREE;
 
-  this.options = {
-    crossOrigin: 'Anonymous',
-    materialParams: {
+  this.materialParams = {
       ambient: 0xbbbbbb,
       transparent: false,
       side: THREE.DoubleSide,
@@ -269,20 +267,19 @@ function Texture(opts) {
 
       "}"
 		].join("\n")
-	},
+	};
 
-    materialTransparentParams: {
+  this.materialTransparentParams = {
       ambient: 0xbbbbbb,
       transparent: true,
       side: this.THREE.DoubleSide,
       //depthWrite: false,
       //depthTest: false
       // TODO
-    }
   };
 
-  this.options.materialParams.lights = []; // force lights refresh to setup uniforms, three.js WebGLRenderer line 4323
-  this.options.materialParams.uniforms.tileMap.value = this.texture;
+  this.materialParams.lights = []; // force lights refresh to setup uniforms, three.js WebGLRenderer line 4323
+  this.materialParams.uniforms.tileMap.value = this.texture;
   this.texture.magFilter = this.THREE.NearestFilter;
   this.texture.minFilter = this.THREE.LinearMipMapLinearFilter;
 
@@ -292,8 +289,8 @@ function Texture(opts) {
       vertexColors: this.THREE.VertexColors
     });
   } else {
-    var opaque = new this.THREE.ShaderMaterial(this.options.materialParams);
-    var transparent = new this.THREE.ShaderMaterial(this.options.materialTransparentParams);
+    var opaque = new this.THREE.ShaderMaterial(this.materialParams);
+    var transparent = new this.THREE.ShaderMaterial(this.materialTransparentParams);
     this.material = new this.THREE.MeshFaceMaterial([
       opaque,
       transparent
@@ -559,7 +556,7 @@ Texture.prototype.animate = function(mesh, names, delay) {
   delay = delay || 1000;
   if (!Array.isArray(names) || names.length < 2) return false;
   var i = 0;
-  var mat = new this.options.materialType(this.options.materialParams);
+  var mat = new this.options.materialType(this.materialParams);
   mat.map = this.texture;
   mat.transparent = true;
   mat.needsUpdate = true;
