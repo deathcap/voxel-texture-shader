@@ -411,6 +411,59 @@ Texture.prototype._afterLoading = function() {
     self.atlas.index().forEach(function(key) {
       self._atlaskey[key.name] = key;
     });
+
+    var mipmap = function(size, color) {
+      // based on http://threejs.org/examples/webgl_materials_texture_manualmipmap.html
+      var mipCanvas = document.createElement('canvas');
+      var context = mipCanvas.getContext('2d');
+
+      mipCanvas.width = mipCanvas.height = size;
+      console.log(size);
+
+      // source image
+      var tileWidth = 16;
+      var tileHeight = 16;
+
+      var scale = self.canvas.width / size;
+
+      // scale each tile individually 
+      for (var tx = 0; tx < self.canvas.width / tileWidth; tx += 1) { // TODO: only bother copying tiles that exist
+        for (var ty = 0; ty < self.canvas.height / tileHeight; ty += 1) {
+          var sx = tx * tileWidth;
+          var sy = ty * tileHeight;
+          var sw = tileWidth;
+          var sh = tileHeight;
+
+          var dx = sx / scale;
+          var dy = sy / scale;
+          var dw = sw / scale;
+          var dh = sh / scale;
+
+          context.drawImage(self.canvas, sx, sy, sw, sh, dx, dy, dw, dh); // TODO: sinc interpolation
+        }
+      }
+      console.log(size,mipCanvas.toDataURL());
+
+      // whole image - causes artifacts
+      //context.drawImage(self.canvas, 0, 0, size, size);
+
+      return mipCanvas;
+    };
+
+    // set manual mipmaps
+    self.texture.mipmaps[0] = self.canvas;
+    console.log(self.canvas,self.canvas.width,self.canvas.height);
+    var mipWidth = self.canvas.width;
+    do {
+      mipWidth >>= 1;
+      self.texture.mipmaps.push(mipmap(mipWidth));
+      // create mipmaps for down to one pixel
+      // http://0fps.wordpress.com/2013/07/09/texture-atlases-wrapping-and-mip-mapping/
+      // "Storing the higher mip levels is not strictly necessary, and in vanilla OpenGL we 
+      // could use the GL_TEXTURE_MAX_LEVEL flag to avoid wasting this extra memory.  
+      // Unfortunately on WebGL/OpenGL ES this option isn’t available"
+    } while (mipWidth > 1);
+
     self.texture.needsUpdate = true;
     self.material.needsUpdate = true;
     //window.open(self.canvas.toDataURL());
