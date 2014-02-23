@@ -556,7 +556,7 @@ Texture.prototype.animate = function(mesh, names, delay) {
   delay = delay || 1000;
   if (!Array.isArray(names) || names.length < 2) return false;
   var i = 0;
-  var mat = new this.options.materialType(this.materialParams);
+  var mat = new this.THREE.ShaderMaterial(this.materialParams);
   mat.map = this.texture;
   mat.transparent = true;
   mat.needsUpdate = true;
