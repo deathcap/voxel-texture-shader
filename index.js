@@ -20,7 +20,7 @@ function Texture(opts) {
   this.THREE = this.game.THREE;
   this.names = [];
   this.materials = [];
-  this.transparents = {};
+  this.transparents = [];
   this.artPacks = opts.artPacks;
   if (!this.artPacks) throw new Error('voxel-texture-shader requires artPacks option');
   this.loading = 0;
@@ -350,7 +350,7 @@ Texture.prototype.pack = function(name, done) {
   if (typeof name === 'string') {
     self.artPacks.getTextureImage(name, function(img) {
       if (isTransparent(img)) {
-        self.transparents[name] = true;
+        self.transparents.push(name);
       }
       // repeat 2x2 for mipmap padding 4-tap trick
       // TODO: replace with atlaspack padding, but changed to 2x2: https://github.com/deathcap/atlaspack/tree/tilepadamount
@@ -485,7 +485,7 @@ Texture.prototype.paint = function(mesh, materials) {
     if (!atlasuv) return;
 
     // If a transparent texture use transparent material
-    face.materialIndex = self.transparents[name] ? 1 : 0;
+    face.materialIndex = (self.transparents.indexOf(name) !== -1) ? 1 : 0;
 
     // 0 -- 1
     // |    |
