@@ -53,7 +53,7 @@ function Texture(opts) {
     var materialParams = {
       ambient: 0xbbbbbb,
       transparent: transparent,
-      side: THREE.DoubleSide,
+      side: THREE.FrontSide,
       lights: [], // force lights refresh to setup uniforms, three.js WebGLRenderer line 4323
 
 
