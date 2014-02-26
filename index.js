@@ -30,6 +30,7 @@ function Texture(opts) {
   delete opts.materialFlatColor;
 
   this.useFourTap = opts.useFourTap = opts.useFourTap === undefined ? true : opts.useFourTap;
+  this.useTransparency = opts.useTransparency = opts.useTransparency === undefined ? true : opts.useTransparency;
 
   // create a canvas for the texture atlas
   this.canvas = (typeof document !== 'undefined') ? document.createElement('canvas') : {};
@@ -503,7 +504,7 @@ Texture.prototype.paint = function(mesh, materials) {
     if (!atlasuv) return;
 
     // If a transparent texture use transparent material
-    face.materialIndex = (self.transparents.indexOf(name) !== -1) ? 1 : 0;
+    face.materialIndex = (self.useTransparency && self.transparents.indexOf(name) !== -1) ? 1 : 0;
 
     // 0 -- 1
     // |    |
