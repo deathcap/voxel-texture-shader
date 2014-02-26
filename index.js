@@ -239,7 +239,6 @@ function Texture(opts) {
     'vec2 texCoord = tileOffset + tileSize * fract(tileUV);',
     'gl_FragColor = texture2D(tileMap, texCoord);'].join('\n')),
 '',
-'   if (gl_FragColor.a < 0.001) discard; // transparency',
 
 
 				THREE.ShaderChunk[ "alphatest_fragment" ],
