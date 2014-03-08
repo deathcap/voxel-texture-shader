@@ -368,6 +368,13 @@ Texture.prototype.pack = function(name, done) {
   }
   if (typeof name === 'string') {
     self.artPacks.getTextureImage(name, function(img) {
+
+      if (Array.isArray(img)) {
+        // TODO: support animated textures, returned as array https://github.com/deathcap/voxel-texture-shader/issues/5
+        // but for now, only use the first frame
+        img = img[0];
+      }
+
       if (isTransparent(img)) {
         self.transparents.push(name);
       }
