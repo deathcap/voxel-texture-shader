@@ -397,6 +397,15 @@ Texture.prototype.pack = function(name, done) {
 };
 
 Texture.prototype.find = function(name) {
+  // if available, lookup registered block name
+  if (this.game.plugins) {
+    var registry = this.game.plugins.get('voxel-registry');
+    var index = registry.getBlockIndex(name);
+    if (index !== undefined)
+      return index;
+  }
+
+  // otherwise, lookup first material with any matching texture name
   var self = this;
   var type = 0;
   self.materials.forEach(function(mats, i) {
