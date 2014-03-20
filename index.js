@@ -72,7 +72,7 @@ function Texture(opts) {
 
           // ours
           tileMap: {type: 't', value: null}, // textures not preserved by UniformsUtils.merge(); set below instead
-          tileSize: {type: 'f', value: 16.0 / this.canvas.width} // size of tile in UV units (0.0-1.0), square (=== 16.0 / this.canvas.height)
+          atlasSize: {type: 'f', value: this.canvas.width} // atlas canvas width (= height) in pixels
         }
 		] ),
 
@@ -152,7 +152,8 @@ function Texture(opts) {
 
       // added
 'uniform sampler2D tileMap;',
-'uniform float tileSize;', // Size of a tile in atlas
+//'uniform float tileSize;', // Size of a tile in atlas // computed below
+'uniform float atlasSize;', // size of atlas in pixels
 '',
 'varying vec3 vNormal;',
 'varying vec3 vPosition;',
@@ -165,6 +166,7 @@ function Texture(opts) {
 
 'vec4 fourTapSample(vec2 tileOffset, //Tile offset in the atlas ',
 '                  vec2 tileUV, //Tile coordinate (as above)',
+'                  vec2 tileSize,',
 '                  sampler2D atlas) {', // }
 '  //Initialize accumulators',
 '  vec4 color = vec4(0.0, 0.0, 0.0, 0.0);',
@@ -227,13 +229,15 @@ function Texture(opts) {
 
 // three.js' UV coordinate is passed as tileOffset, starting point determining the texture
 // material type (_not_ interpolated; same for all vertices).
-'   vec2 tileOffset = vUv;',
+'   vec2 tileOffset = fract(vUv);',
+'   vec2 tileSize = floor(vUv) / vec2(atlasSize, atlasSize);', // TODO: trunc? overloaded not found
 
 '',
 (this.useFourTap // TODO: use glsl conditional compilation?
   ? [
     '     gl_FragColor = fourTapSample(tileOffset, //Tile offset in the atlas ',
     '                  tileUV, //Tile coordinate (as above)',
+    '                  tileSize,',
     '                  tileMap);'].join('\n') 
   : [
     // index tile at offset into texture atlas
@@ -536,9 +540,31 @@ Texture.prototype.paint = function(mesh, materials) {
     var topUV = atlasuv[0], rightUV = atlasuv[1], bottomUV = atlasuv[2], leftUV = atlasuv[3];
 
     // pass texture start in UV coordinates
+
+    // WARNING: ugly hack ahead. because I don't know how to pass per-geometry uniforms
+    // to custom shaders using three.js (https://github.com/deathcap/voxel-texture-shader/issues/3),
+    // I'm (ab)using faceVertexUvs = the 'uv' attribute: it is the same for all coordinates,
+    // and the fractional part is the top-left UV, the whole part is the tile size.
+
+    var tileSizeX = bottomUV[0] - topUV[0];
+    var tileSizeY = topUV[1] - bottomUV[1];
+
+    // integer
+    var tileSizeIntX = tileSizeX * self.canvas.width;
+    var tileSizeIntY = tileSizeY * self.canvas.height;
+    // half because of four-tap repetition
+    tileSizeIntX /= 2;
+    tileSizeIntY /= 2;
+
+    var isInteger = function(n) { return Math.round(n) === n; }; // Number.isInteger :(
+    if (!isInteger(tileSizeIntX) || !isInteger(tileSizeIntY)) {
+      throw new Error('voxel-texture-shader tile dimensions non-integer '+tileSizeIntX+','+tileSizeIntY);
+    }
+
     for (var j = 0; j < mesh.geometry.faceVertexUvs[0][i].length; j++) {
       //mesh.geometry.faceVertexUvs[0][i][j].set(atlasuv[j][0], 1 - atlasuv[j][1]);
-      mesh.geometry.faceVertexUvs[0][i][j].set(topUV[0], 1.0 - topUV[1]); // set all to top (fixed tileSize)
+
+      mesh.geometry.faceVertexUvs[0][i][j].set(tileSizeIntX + topUV[0], tileSizeIntY + (1.0 - topUV[1])); // set all to top (+ encoded tileSize)
     }
   });
 
