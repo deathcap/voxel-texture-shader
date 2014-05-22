@@ -391,7 +391,7 @@ Texture.prototype.pack = function(name, done) {
         pack(img2);
       }
     }, function(err, img) {
-      console.error('Couldn\'t load URL [' + img.src + ']');
+      console.error('Couldn\'t load URL [' + img.src + ']: ',err);
       done();
     });
   } else {
