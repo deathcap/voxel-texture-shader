@@ -208,22 +208,22 @@ function Texture(opts) {
 '    // back and bottom: flip 180',
 '    if (vNormal.z < 0.0 || vNormal.y < 0.0) tileUV.t = 1.0 - tileUV.t;',
 '',
-'    // left: rotate 90 ccw',
+'    // left: rotate 90 cw',
 '    if (vNormal.x < 0.0) {',
 '        float r = tileUV.s;',
-'        tileUV.s = tileUV.t;',
-'        tileUV.t = 1.0 - r;',
+'        tileUV.s = 1.0 - tileUV.t;',
+'        tileUV.t = r;',
 '    }',
 '',
-'    // right and top: rotate 90 cw',
+'    // right and top: rotate 90 ccw',
 '    if (vNormal.x > 0.0 || vNormal.y > 0.0) {',
 '        float r = tileUV.s;',
-'        tileUV.s = tileUV.t;',
-'        tileUV.t = r;',
+'        tileUV.s = 1.0 - tileUV.t;',
+'        tileUV.t = 1.0 - r;',
 '    }', 
 '',
-'    // front and back and bottom: flip 180',
-'   if (vNormal.z > 0.0 || vNormal.z < 0.0 || vNormal.y < 0.0) tileUV.s = 1.0 - tileUV.s;',
+'    // front and back and bottom: flip 180', // TODO: make top and bottom consistent (pointing north?)
+'   if (vNormal.z > 0.0 || vNormal.z < 0.0 || vNormal.y < 0.0) tileUV.t = 1.0 - tileUV.t;',
 '',
 '',
 
@@ -525,16 +525,6 @@ Texture.prototype.paint = function(mesh, materials) {
 
     // If a transparent texture use transparent material
     face.materialIndex = (self.useTransparency && self.transparents.indexOf(name) !== -1) ? 1 : 0;
-
-    // 0 -- 1
-    // |    |
-    // 3 -- 2
-    // faces on these meshes are flipped vertically, so we map in reverse
-    if (isVoxelMesh) {
-      atlasuv = uvinvert(atlasuv);
-    } else {
-      atlasuv = uvrot(atlasuv, -90);
-    }
 
     // range of UV coordinates for this texture (see above diagram)
     var topUV = atlasuv[0], rightUV = atlasuv[1], bottomUV = atlasuv[2], leftUV = atlasuv[3];
