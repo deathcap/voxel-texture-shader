@@ -1,7 +1,7 @@
 {
   "name": "voxel-texture-shader",
   "description": "A custom shader for texturing voxels in voxeljs",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "main": "texture-shader.js",
   "homepage": "https://github.com/deathcap/voxel-texture-shader",
   "author": {
